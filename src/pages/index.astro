@@ -17,7 +17,6 @@ const shareMessage = `${site.shareMessage} `;
         <p class="mx-auto mt-6 max-w-lg text-base text-[var(--muted)] md:mx-0 md:text-lg">{site.invitationLine}</p>
         <div class="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
           <a class="btn-primary" href={`${base}events/`}>Explore the celebrations <span aria-hidden="true">→</span></a>
-          <ShareButton message={shareMessage} label="Share invitation" />
         </div>
         {hasDate ? (
           <div class="mt-9" data-countdown={site.weddingDate}>
@@ -86,6 +85,9 @@ const shareMessage = `${site.shareMessage} `;
     <div class="mt-7 flex flex-wrap justify-center gap-3">
       <a class="btn-primary" href={`${base}updates/`}>Latest updates</a>
       <a class="btn-outline" href={`${base}gallery/`}>Visit the gallery</a>
+    </div>
+    <div class="mt-5">
+      <ShareButton message={shareMessage} label="Share invitation" />
     </div>
   </section>
   <script>
