@@ -8,7 +8,6 @@ const navItems = [
   { href: '/events/', label: 'Events' },
   { href: '/updates/', label: 'Updates' },
   { href: '/gallery/', label: 'Gallery' },
-  { href: '/story/', label: 'Our Story' },
 ];
 const base = import.meta.env.BASE_URL;
 ---
@@ -31,11 +30,10 @@ const base = import.meta.env.BASE_URL;
       <div class="page-shell flex min-h-16 flex-col items-center gap-2 py-3 sm:flex-row sm:justify-between sm:gap-4">
         <a href={base} class="serif text-center text-xl leading-tight text-[var(--maroon)] no-underline sm:text-left" aria-label="Wedding home" data-reveal style="--reveal-delay: 40ms">{site.shortNames}</a>
         <nav class="grid w-full grid-cols-4 items-center justify-items-center gap-x-1 sm:flex sm:w-auto sm:justify-end sm:gap-x-6" aria-label="Main navigation" data-reveal style="--reveal-delay: 120ms">
-          {navItems.map((item, index) => {
+          {navItems.map((item) => {
             const href = item.href === '/' ? base : `${base}${item.href.replace(/^\//, '')}`;
             const isCurrent = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
-            const mobilePlacement = index === navItems.length - 1 && navItems.length % 4 !== 0 ? 'col-start-2 col-span-2' : '';
-            return <a class={`nav-link whitespace-nowrap text-center ${mobilePlacement}`} href={href} aria-current={isCurrent ? 'page' : undefined}>{item.label}</a>;
+            return <a class="nav-link whitespace-nowrap text-center" href={href} aria-current={isCurrent ? 'page' : undefined}>{item.label}</a>;
           })}
         </nav>
       </div>
@@ -47,7 +45,7 @@ const base = import.meta.env.BASE_URL;
         <p class="serif mt-2 text-3xl">{site.shortNames}</p>
         <p class="mx-auto mt-3 max-w-md text-sm text-white/70">{site.invitationLine}</p>
         <div class="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-          <a href={`${base}events/`}>Celebrations</a><a href={`${base}updates/`}>Latest updates</a><a href={`${base}gallery/`}>Memories</a><a href={`${base}story/`}>Our story</a>
+          <a href={`${base}events/`}>Celebrations</a><a href={`${base}updates/`}>Latest updates</a><a href={`${base}gallery/`}>Memories</a>
         </div>
       </div>
     </footer>
