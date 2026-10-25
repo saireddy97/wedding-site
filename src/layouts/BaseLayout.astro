@@ -1,0 +1,53 @@
+---
+import '../styles/global.css';
+import site from '../data/site.json';
+const { title = `${site.shortNames} | Wedding Celebration`, description = 'Join us as we celebrate a beautiful new beginning.' } = Astro.props;
+const currentPath = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/');
+const navItems = [
+  { href: '/', label: 'Invitation' },
+  { href: '/events/', label: 'Events' },
+  { href: '/updates/', label: 'Updates' },
+  { href: '/gallery/', label: 'Gallery' },
+];
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6f2033" />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  </head>
+  <body>
+    <header class="site-header sticky top-0 z-40">
+      <div class="page-shell flex min-h-16 items-center justify-between gap-4 py-3">
+        <a href={base} class="serif text-lg leading-tight text-[var(--maroon)] no-underline sm:text-xl" aria-label="Wedding home">{site.shortNames}</a>
+        <nav class="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 sm:gap-x-6" aria-label="Main navigation">
+          {navItems.map((item) => {
+            const href = item.href === '/' ? base : `${base}${item.href.replace(/^\//, '')}`;
+            const isCurrent = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
+            return <a class="nav-link" href={href} aria-current={isCurrent ? 'page' : undefined}>{item.label}</a>;
+          })}
+        </nav>
+      </div>
+    </header>
+    <main><slot /></main>
+    <footer class="mt-20">
+      <div class="page-shell py-10 text-center">
+        <p class="eyebrow text-[var(--gold-light)]">With love and blessings</p>
+        <p class="serif mt-2 text-3xl">{site.shortNames}</p>
+        <p class="mx-auto mt-3 max-w-md text-sm text-white/70">{site.invitationLine}</p>
+        <div class="mt-6 flex justify-center gap-5 text-sm">
+          <a href={`${base}events/`}>Celebrations</a><a href={`${base}updates/`}>Latest updates</a><a href={`${base}gallery/`}>Memories</a>
+        </div>
+        <p class="mt-8 text-xs text-white/50">Made with love · Wedding details may be updated as plans are confirmed</p>
+      </div>
+    </footer>
+  </body>
+</html>

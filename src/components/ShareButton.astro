@@ -1,0 +1,10 @@
+---
+const { label = 'Share on WhatsApp', message = 'Join us for our wedding celebration!' } = Astro.props;
+---
+<a class="btn-outline whatsapp-share" href={`https://wa.me/?text=${encodeURIComponent(message)}`} data-share-message={message} target="_blank" rel="noopener noreferrer" aria-label={label}>↗ {label}</a>
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('.whatsapp-share').forEach((link) => {
+    const message = link.dataset.shareMessage ?? 'Join us for our wedding celebration!';
+    link.href = `https://wa.me/?text=${encodeURIComponent(`${message} ${window.location.href}`)}`;
+  });
+</script>

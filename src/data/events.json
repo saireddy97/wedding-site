@@ -1,0 +1,42 @@
+[
+  {
+    "id": "mehendi",
+    "name": "Mehendi",
+    "date": "",
+    "time": "Add time",
+    "description": "An afternoon of colour, music, and joyful traditions.",
+    "venue": "Add venue",
+    "dressCode": "Festive colours",
+    "icon": "✿"
+  },
+  {
+    "id": "sangeet",
+    "name": "Sangeet",
+    "date": "",
+    "time": "Add time",
+    "description": "An evening filled with music, dancing, and family celebrations.",
+    "venue": "Add venue",
+    "dressCode": "Indian festive",
+    "icon": "♫"
+  },
+  {
+    "id": "wedding",
+    "name": "The Wedding Ceremony",
+    "date": "",
+    "time": "Add muhurtham time",
+    "description": "The moment our forever begins, surrounded by your love and blessings.",
+    "venue": "Add venue",
+    "dressCode": "Traditional attire",
+    "icon": "❋"
+  },
+  {
+    "id": "reception",
+    "name": "Reception",
+    "date": "",
+    "time": "Add time",
+    "description": "Join us for dinner, photographs, and a final toast to the celebrations.",
+    "venue": "Add venue",
+    "dressCode": "Formal or festive",
+    "icon": "✧"
+  }
+]

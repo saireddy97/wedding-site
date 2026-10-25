@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ShareButton from '../components/ShareButton.astro';
+import site from '../data/site.json';
+import events from '../data/events.json';
+const base = import.meta.env.BASE_URL;
+const hasDate = Boolean(site.weddingDate);
+const shareMessage = `${site.shareMessage} `;
+---
+<BaseLayout title={`${site.shortNames} | You're Invited`} description={site.invitationLine}>
+  <section class="hero-pattern relative overflow-hidden border-b border-[var(--line)]">
+    <div class="page-shell grid min-h-[660px] items-center gap-10 py-16 md:grid-cols-[1.1fr_.9fr] md:py-24">
+      <div class="relative z-10 text-center md:text-left">
+        <p class="eyebrow text-[var(--gold)]">{site.familyLine}</p>
+        <div class="gold-rule mx-auto mt-5 max-w-sm md:mx-0"><span>✧</span><span class="eyebrow">The wedding invitation</span><span>✧</span></div>
+        <h1 class="serif mt-7 text-5xl leading-[1.08] text-[var(--maroon)] sm:text-6xl lg:text-7xl">{site.partnerOne}<span class="my-3 block text-3xl italic text-[var(--gold)] sm:text-4xl">&amp;</span>{site.partnerTwo}</h1>
+        <p class="mx-auto mt-6 max-w-lg text-base text-[var(--muted)] md:mx-0 md:text-lg">{site.invitationLine}</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
+          <a class="btn-primary" href={`${base}events/`}>Explore the celebrations <span aria-hidden="true">→</span></a>
+          <ShareButton message={shareMessage} label="Share invitation" />
+        </div>
+        {hasDate ? (
+          <div class="mt-9" data-countdown={site.weddingDate}>
+            <p class="eyebrow mb-3 text-[var(--muted)]">Counting down to our day</p>
+            <div class="flex justify-center gap-2 md:justify-start" data-countdown-units>
+              <div class="countdown-unit"><div class="countdown-number" data-days>—</div><div class="mt-1 text-xs text-[var(--muted)]">Days</div></div>
+              <div class="countdown-unit"><div class="countdown-number" data-hours>—</div><div class="mt-1 text-xs text-[var(--muted)]">Hours</div></div>
+              <div class="countdown-unit"><div class="countdown-number" data-minutes>—</div><div class="mt-1 text-xs text-[var(--muted)]">Minutes</div></div>
+            </div>
+          </div>
+        ) : (
+          <p class="mt-8 text-sm text-[var(--muted)]">Our celebration date will be announced soon.</p>
+        )}
+      </div>
+      <div class="relative mx-auto w-full max-w-md">
+        <div class="absolute -inset-4 border border-[var(--gold-light)]"></div>
+        <div class="relative aspect-[4/5] overflow-hidden bg-[#e7dac5]">
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1100&q=90" alt="Elegant wedding flowers and romantic celebration details" class="h-full w-full object-cover" fetchpriority="high" />
+          <div class="absolute inset-4 border border-white/70"></div>
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#30121c]/85 to-transparent px-6 pb-8 pt-20 text-center text-white">
+            <p class="eyebrow text-[var(--gold-light)]">A new chapter begins</p>
+            <p class="serif mt-2 text-3xl">Save the date</p>
+            <p class="mt-1 text-sm text-white/80">{site.weddingDate || 'Date to be announced'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute left-1/2 top-8 hidden -translate-x-1/2 text-4xl text-[var(--gold-light)] md:block" aria-hidden="true">❋</div>
+  </section>
+
+  <section class="page-shell py-16 sm:py-20">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow text-[var(--gold)]">A celebration of love</p>
+      <h2 class="serif mt-3 text-4xl text-[var(--maroon)] sm:text-5xl">The festivities</h2>
+      <p class="mt-4 text-[var(--muted)]">Every ritual, every laugh, every shared blessing — we would be honoured to celebrate these moments with you.</p>
+    </div>
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {events.map((event) => <article class="card event-card p-5 text-center">
+        <div class="text-3xl text-[var(--gold)]" aria-hidden="true">{event.icon}</div>
+        <h3 class="serif mt-3 text-2xl text-[var(--maroon)]">{event.name}</h3>
+        <p class="mt-2 text-sm text-[var(--muted)]">{event.date || 'Date to be announced'}</p>
+        <p class="mt-1 text-sm">{event.time}</p>
+      </article>)}
+    </div>
+    <div class="mt-8 text-center"><a href={`${base}events/`} class="btn-outline">View all event details →</a></div>
+  </section>
+
+  <section class="bg-[#efe4d2] py-16 sm:py-20">
+    <div class="page-shell grid items-center gap-10 md:grid-cols-2">
+      <div class="order-2 md:order-1">
+        <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1100&q=85" alt="Wedding couple sharing a quiet moment" loading="lazy" class="aspect-[5/4] w-full object-cover" />
+      </div>
+      <div class="order-1 md:order-2 md:pl-6">
+        <p class="eyebrow text-[var(--gold)]">Our story</p>
+        <h2 class="serif mt-3 text-4xl text-[var(--maroon)] sm:text-5xl">A little more about us</h2>
+        <p class="mt-5 text-[var(--muted)]">{site.story}</p>
+        <div class="gold-rule mt-7 max-w-xs"><span>With love</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-shell py-16 text-center sm:py-20">
+    <p class="eyebrow text-[var(--gold)]">Stay in the loop</p>
+    <h2 class="serif mt-3 text-4xl text-[var(--maroon)] sm:text-5xl">All the little details</h2>
+    <p class="mx-auto mt-4 max-w-xl text-[var(--muted)]">Check the latest announcements, find event information, and share the invitation with the people you love.</p>
+    <div class="mt-7 flex flex-wrap justify-center gap-3">
+      <a class="btn-primary" href={`${base}updates/`}>Latest updates</a>
+      <a class="btn-outline" href={`${base}gallery/`}>Visit the gallery</a>
+    </div>
+  </section>
+  <script>
+    const countdownRoot = document.querySelector<HTMLElement>('[data-countdown]');
+    const weddingDate = countdownRoot?.dataset.countdown;
+    if (countdownRoot && weddingDate) {
+      const target = new Date(weddingDate.includes('T') ? weddingDate : `${weddingDate}T00:00:00+05:30`).getTime();
+      const updateCountdown = () => {
+        const remaining = Math.max(0, target - Date.now());
+        const values = { days: Math.floor(remaining / 86400000), hours: Math.floor((remaining % 86400000) / 3600000), minutes: Math.floor((remaining % 3600000) / 60000) };
+        Object.entries(values).forEach(([unit, value]) => { const node = countdownRoot.querySelector(`[data-${unit}]`); if (node) node.textContent = String(value).padStart(2, '0'); });
+      };
+      updateCountdown();
+      window.setInterval(updateCountdown, 60000);
+    }
+  </script>
+</BaseLayout>
