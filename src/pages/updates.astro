@@ -6,13 +6,13 @@ import site from '../data/site.json';
 ---
 <BaseLayout title={`Updates | ${site.shortNames}`} description="The latest notes and announcements for our wedding guests.">
   <section class="page-shell py-14 sm:py-20">
-    <header class="mx-auto max-w-2xl text-center">
+    <header class="mx-auto max-w-2xl text-center" data-reveal>
       <p class="eyebrow text-[var(--gold)]">A little note from us</p>
       <h1 class="serif mt-3 text-5xl text-[var(--maroon)] sm:text-6xl">Wedding updates</h1>
       <p class="mt-5 text-[var(--muted)]">The latest details and helpful reminders, all in one place. Please check back before your journey.</p>
     </header>
     <div class="mx-auto mt-12 max-w-2xl space-y-5">
-      {announcements.map((item) => <article class="card p-6 sm:p-8">
+      {announcements.map((item, index) => <article class="card p-6 sm:p-8" data-reveal style={`--reveal-delay: ${Math.min(index * 90, 360)}ms`}>
         <div class="flex flex-wrap items-center justify-between gap-2"><span class="eyebrow text-[var(--gold)]">{item.tag}</span><time class="text-sm text-[var(--muted)]">{item.date}</time></div>
         <h2 class="serif mt-3 text-3xl text-[var(--maroon)]">{item.title}</h2>
         <p class="mt-4 whitespace-pre-line text-[var(--muted)]">{item.body}</p>

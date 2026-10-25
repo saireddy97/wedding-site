@@ -6,13 +6,13 @@ import site from '../data/site.json';
 ---
 <BaseLayout title={`Celebrations | ${site.shortNames}`} description="Dates, times and details for each wedding celebration.">
   <section class="page-shell py-14 sm:py-20">
-    <header class="mx-auto max-w-2xl text-center">
+    <header class="mx-auto max-w-2xl text-center" data-reveal>
       <p class="eyebrow text-[var(--gold)]">Mark your calendars</p>
       <h1 class="serif mt-3 text-5xl text-[var(--maroon)] sm:text-6xl">The celebrations</h1>
       <p class="mt-5 text-[var(--muted)]">We look forward to celebrating each tradition with you.</p>
     </header>
     <div class="mx-auto mt-12 max-w-3xl space-y-5">
-      {events.map((event, index) => <article class="card event-card grid gap-4 p-5 sm:grid-cols-[88px_1fr] sm:gap-6 sm:p-7">
+      {events.map((event, index) => <article class="card event-card grid gap-4 p-5 sm:grid-cols-[88px_1fr] sm:gap-6 sm:p-7" data-reveal style={`--reveal-delay: ${Math.min(index * 80, 400)}ms`}>
         <div class="flex h-20 w-20 flex-col items-center justify-center border border-[var(--gold-light)] text-center">
           <span class="serif text-3xl text-[var(--maroon)]">{String(index + 1).padStart(2, '0')}</span>
           <span class="text-xs text-[var(--gold)]">EVENT</span>
@@ -32,6 +32,6 @@ import site from '../data/site.json';
         </div>
       </article>)}
     </div>
-    <div class="mt-10 text-center"><ShareButton message={`See the wedding event schedule for ${site.shortNames}:`} label="Share event schedule" /></div>
+    <div class="mt-10 text-center" data-reveal><ShareButton message={`See the wedding event schedule for ${site.shortNames}:`} label="Share event schedule" /></div>
   </section>
 </BaseLayout>
