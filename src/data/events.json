@@ -1,11 +1,21 @@
 [
   {
-    "id": "mehendi",
-    "name": "Mehendi",
+    "id": "engagement",
+    "name": "Engagement",
     "date": "",
-    "time": "Add time",
-    "description": "An afternoon of colour, music, and joyful traditions.",
-    "venue": "Add venue",
+    "time": "To be announced",
+    "description": "Join us as we celebrate our engagement with family and friends.",
+    "venue": "To be announced",
+    "dressCode": "Festive attire",
+    "icon": "✧"
+  },
+  {
+    "id": "haldi",
+    "name": "Haldi",
+    "date": "",
+    "time": "To be announced",
+    "description": "A joyful gathering filled with colour, blessings, and family traditions.",
+    "venue": "To be announced",
     "dressCode": "Festive colours",
     "icon": "✿"
   },
@@ -13,19 +23,29 @@
     "id": "sangeet",
     "name": "Sangeet",
     "date": "",
-    "time": "Add time",
+    "time": "To be announced",
     "description": "An evening filled with music, dancing, and family celebrations.",
-    "venue": "Add venue",
+    "venue": "To be announced",
     "dressCode": "Indian festive",
     "icon": "♫"
+  },
+  {
+    "id": "mehandi",
+    "name": "Mehandi",
+    "date": "",
+    "time": "To be announced",
+    "description": "An afternoon of colour, music, and joyful traditions.",
+    "venue": "To be announced",
+    "dressCode": "Festive colours",
+    "icon": "✿"
   },
   {
     "id": "wedding",
     "name": "The Wedding Ceremony",
     "date": "",
-    "time": "Add muhurtham time",
+    "time": "To be announced",
     "description": "The moment our forever begins, surrounded by your love and blessings.",
-    "venue": "Add venue",
+    "venue": "To be announced",
     "dressCode": "Traditional attire",
     "icon": "❋"
   },
@@ -33,9 +53,9 @@
     "id": "reception",
     "name": "Reception",
     "date": "",
-    "time": "Add time",
+    "time": "To be announced",
     "description": "Join us for dinner, photographs, and a final toast to the celebrations.",
-    "venue": "Add venue",
+    "venue": "To be announced",
     "dressCode": "Formal or festive",
     "icon": "✧"
   }
