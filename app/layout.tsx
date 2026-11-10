@@ -16,10 +16,10 @@ const body = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saiandharshiwedding.in"),
-  title: "Sai & Harshi | Coming Soon",
-  description: "Sai & Harshi are getting married. Our wedding website is coming soon.",
+  title: "Sai & Harshitha | Coming Soon",
+  description: "Sai & Harshitha are getting married. Our wedding website is coming soon.",
   openGraph: {
-    title: "Sai & Harshi",
+    title: "Sai & Harshitha",
     description: "Our wedding website is coming soon.",
     type: "website",
   },

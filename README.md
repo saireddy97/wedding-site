@@ -1,4 +1,4 @@
-# Sai & Harshi Wedding Website
+# Sai & Harshitha Wedding Website
 
 Next.js (App Router) + React + Tailwind CSS v4, built for Vercel.
 

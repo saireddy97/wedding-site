@@ -11,7 +11,7 @@ export default function ComingSoon() {
         className="pointer-events-none absolute inset-6 rounded-[1.5rem] border border-gold/20 sm:inset-10"
       />
 
-      <div className="relative z-10 flex max-w-xl flex-col items-center">
+      <div className="relative z-10 flex max-w-4xl flex-col items-center">
         <p
           className="fade-up text-xs uppercase tracking-[0.4em] text-gold"
           style={{ animationDelay: "0.1s" }}
@@ -20,12 +20,12 @@ export default function ComingSoon() {
         </p>
 
         <h1
-          className="fade-up mt-8 font-display text-6xl font-medium leading-none text-maroon sm:text-8xl"
+          className="fade-up mt-8 font-display text-6xl font-medium leading-none text-maroon sm:text-7xl md:text-8xl"
           style={{ animationDelay: "0.3s" }}
         >
           Sai
           <span className="mx-3 font-normal italic text-gold sm:mx-5">&amp;</span>
-          Harshi
+          Harshitha
         </h1>
 
         <div
@@ -42,7 +42,7 @@ export default function ComingSoon() {
           className="fade-up mt-10 font-display text-lg italic text-ink/80 sm:text-2xl"
           style={{ animationDelay: "0.7s" }}
         >
-          We&rsquo;re getting married, and our website is almost ready.
+          We&rsquo;re getting married.
         </p>
 
         <p
@@ -52,13 +52,6 @@ export default function ComingSoon() {
           Details coming soon
         </p>
       </div>
-
-      <footer
-        className="fade-up absolute bottom-10 text-xs tracking-[0.25em] text-ink/40 sm:bottom-14"
-        style={{ animationDelay: "1.1s" }}
-      >
-        SAIANDHARSHIWEDDING.IN
-      </footer>
     </main>
   );
 }
