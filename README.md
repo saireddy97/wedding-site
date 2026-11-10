@@ -25,4 +25,4 @@ Open http://localhost:3000.
 4. Vercel shows the DNS records to add at your domain registrar (usually an A record for the root domain and a CNAME for `www`).
 5. Wait for DNS to propagate. HTTPS is set up automatically.
 
-`next.config.mjs` already redirects `www.saiandharshiwedding.in` to `saiandharshiwedding.in`, so add both domains in Vercel.
+Add both `saiandharshiwedding.in` and `www.saiandharshiwedding.in` in Vercel. Pick which one is primary under Settings > Domains and set the other to redirect to it there (the code does not redirect, to avoid redirect loops).
