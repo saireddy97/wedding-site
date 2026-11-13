@@ -2,9 +2,10 @@
 
 Next.js (App Router) + React + Tailwind CSS v4, built for Vercel.
 
-Currently a "coming soon" page. Planned next:
+Currently a "coming soon" page plus a private expense tracker. Planned next:
 
-- `/` public wedding landing page
+- `/` public wedding landing page (currently "coming soon")
+- `/expenses` password-protected expense tracker (built, see setup below)
 - `/prelude` guest-only page (pre-wedding content, quests, leaderboard, Groom vs Bride scores), gated by phone number
 - `/admin` password-protected dashboard
 
@@ -26,3 +27,24 @@ Open http://localhost:3000.
 5. Wait for DNS to propagate. HTTPS is set up automatically.
 
 Add both `saiandharshiwedding.in` and `www.saiandharshiwedding.in` in Vercel. Pick which one is primary under Settings > Domains and set the other to redirect to it there (the code does not redirect, to avoid redirect loops).
+
+## Expense tracker setup (`/expenses`)
+
+The page is locked behind a password that is checked on the server. It needs one password and one database.
+
+1. **Password:** In Vercel, open the project's **Settings > Environment Variables** and add `EXPENSES_PASSWORD` with a long, unique password (a passphrase of 4+ random words works well). Optionally add `EXPENSES_SESSION_SECRET` with any long random string; if you leave it out, the password itself is used to sign the login cookie.
+2. **Database:** In the project's **Storage** tab, add an **Upstash Redis** database from the Marketplace (the free plan is plenty) and connect it to this project. This sets `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or the `KV_REST_API_*` equivalents) automatically.
+3. **Redeploy:** Environment variable changes only apply to new deployments, so trigger a redeploy (Deployments tab, the menu on the latest one, Redeploy).
+4. Open `/expenses` and sign in.
+
+How it is protected:
+
+- Until `EXPENSES_PASSWORD` is set, the page shows "This page isn't available yet" and nothing else.
+- Expense data is only read from the database after the password check passes, and every add, edit and delete re-checks the login on the server.
+- The login cookie is signed, `httpOnly`, `secure` and expires after 30 days. Changing the password (or the session secret) signs everyone out.
+- After 5 wrong passwords from one IP address, that IP is locked out for 15 minutes.
+- The page is marked `noindex` and is not linked from anywhere.
+
+To change the password later, update `EXPENSES_PASSWORD` in Vercel and redeploy.
+
+Local development: put the same variables in a `.env.local` file (it is git-ignored).
