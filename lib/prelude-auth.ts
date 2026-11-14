@@ -3,14 +3,14 @@ import { cookies } from "next/headers";
 import { makeToken, readToken } from "./signed-token";
 
 // Sessions for the pre-wedding page.
-// - Guest session: remembers which invited phone number signed in (30 days).
+// - Guest session: remembers which invited phone number signed in (90 days).
 // - Admin session: for the admin page, signed with PRELUDE_ADMIN_PASSWORD (12 hours).
 // Both cookies are httpOnly, so the browser's scripts can't read them.
 
 const GUEST_COOKIE = "prelude_guest";
 const ADMIN_COOKIE = "prelude_admin";
 const COOKIE_PATH = "/prelude";
-const GUEST_MAX_AGE = 60 * 60 * 24 * 30;
+const GUEST_MAX_AGE = 60 * 60 * 24 * 90;
 const ADMIN_MAX_AGE = 60 * 60 * 12;
 
 function guestKey(): string {

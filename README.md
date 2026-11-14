@@ -72,5 +72,5 @@ How it works:
 
 - Numbers are matched on the 10 digits, so `+91`, spaces and a leading `0` all work.
 - A guest's name is saved the first time they sign in. Later sign-ins don't change it.
-- Guest sessions last 30 days. Sign-in attempts from one IP are limited to 5 misses per 15 minutes.
+- Guest sessions last 90 days. Sign-in attempts from one IP are limited to 5 misses per 15 minutes.
 - The pages are marked `noindex`.
