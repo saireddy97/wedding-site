@@ -196,7 +196,7 @@ export default function ExpenseTracker({
     const amount = Number(form.amount);
     // The balance only applies to a new paid expense; an empty field means no balance.
     const balance =
-      !editingId && form.status === "paid" && form.balance.trim() !== ""
+      !editingId && form.balance.trim() !== ""
         ? Number(form.balance)
         : null;
     startTransition(async () => {
@@ -425,24 +425,7 @@ export default function ExpenseTracker({
             </datalist>
           </div>
 
-          <fieldset className="flex items-center gap-5 sm:col-span-6">
-            <legend className="sr-only">Status</legend>
-            {(["paid", "pending"] as const).map((s) => (
-              <label key={s} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="status"
-                  value={s}
-                  checked={form.status === s}
-                  onChange={() => setForm({ ...form, status: s })}
-                  className="accent-maroon"
-                />
-                {s === "paid" ? "Paid" : "Pending (due later)"}
-              </label>
-            ))}
-          </fieldset>
-
-          <div className={form.status === "paid" && !editingId ? "sm:col-span-3" : "sm:col-span-6"}>
+          <div className={!editingId ? "sm:col-span-3" : "sm:col-span-6"}>
             <label htmlFor="remarks" className="mb-1 block text-xs text-ink/60">
               Remarks (optional)
             </label>
@@ -456,7 +439,7 @@ export default function ExpenseTracker({
             />
           </div>
 
-          {form.status === "paid" && !editingId ? (
+          {!editingId ? (
             <div className="sm:col-span-3">
               <label htmlFor="balance" className="mb-1 block text-xs text-ink/60">
                 Balance still to pay (₹, optional)
