@@ -6,7 +6,7 @@ import { findGuest } from "../../../lib/prelude-store";
 import type { GuestRow } from "../../../lib/prelude-types";
 import { PRELUDE_EVENTS } from "../../../lib/prelude-events";
 import { currentGuestPhone, preludeConfigured } from "../../../lib/prelude-auth";
-import { EventBanner, EventExtras, HaldiHeader } from "../event-parts";
+import { EventBanner, EventExtras, INVITE_IMAGES, InviteImage } from "../event-parts";
 
 // Guest status is checked on every request, so never cache this page.
 export const dynamic = "force-dynamic";
@@ -49,8 +49,8 @@ export default async function EventPage({ params }: Props) {
       </Link>
 
       <div className="mt-4">
-        {event.id === "haldi" ? (
-          <HaldiHeader />
+        {INVITE_IMAGES[event.id] ? (
+          <InviteImage src={INVITE_IMAGES[event.id]} title={event.title} />
         ) : (
           <>
             <EventBanner event={event} />

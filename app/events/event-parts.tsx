@@ -35,13 +35,18 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-// The Haldi invitation image. All of its details are part of the picture, so nothing is added on top.
-export function HaldiHeader() {
+// Events whose invitation image already holds all of its details. Nothing is laid over these.
+export const INVITE_IMAGES: Record<string, string> = {
+  haldi: "/prelude/haldi-invite.png",
+  sangeet: "/prelude/sangeet-invite.png",
+};
+
+export function InviteImage({ src, title }: { src: string; title: string }) {
   return (
     <div className="overflow-hidden rounded-2xl">
-      <h1 className="sr-only">Haldi Ceremony</h1>
+      <h1 className="sr-only">{title}</h1>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/prelude/haldi-invite.png" alt="Haldi Ceremony invitation" className="block h-auto w-full" />
+      <img src={src} alt={`${title} invitation`} className="block h-auto w-full" />
     </div>
   );
 }
@@ -59,8 +64,7 @@ export function EventBanner({ event }: { event: PreludeEvent }) {
 
 // Date, time, venue, dress code, map link and details. Haldi shows its date and venue on the artwork, so only the rest is listed here.
 export function EventExtras({ event }: { event: PreludeEvent }) {
-  const isHaldi = event.id === "haldi";
-  const showCore = !isHaldi;
+  const showCore = !INVITE_IMAGES[event.id];
   return (
     <div>
       {showCore || event.dressCode ? (
