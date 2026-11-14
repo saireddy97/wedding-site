@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { databaseConfigured } from "../../../lib/supabase";
-import { listEvents, listGuests } from "../../../lib/prelude-store";
-import type { GuestRow, PreludeEvent } from "../../../lib/prelude-types";
+import { listGuests } from "../../../lib/prelude-store";
+import type { GuestRow } from "../../../lib/prelude-types";
 import { adminConfigured, isAdmin } from "../../../lib/prelude-auth";
 import AdminPanel, { AdminLogin } from "./AdminPanel";
 
@@ -25,23 +25,15 @@ export default async function PreludeAdminPage() {
 
   const databaseConnected = databaseConfigured();
   let guests: GuestRow[] = [];
-  let events: PreludeEvent[] = [];
   let loadError = false;
 
   if (databaseConnected) {
     try {
-      [guests, events] = await Promise.all([listGuests(), listEvents()]);
+      guests = await listGuests();
     } catch {
       loadError = true;
     }
   }
 
-  return (
-    <AdminPanel
-      guests={guests}
-      events={events}
-      databaseConnected={databaseConnected}
-      loadError={loadError}
-    />
-  );
+  return <AdminPanel guests={guests} databaseConnected={databaseConnected} loadError={loadError} />;
 }

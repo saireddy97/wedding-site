@@ -1,27 +1,13 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import {
-  AUDIENCES,
-  type Audience,
-  type AdminState,
-  type GuestRow,
-  type PreludeEvent,
-} from "../../../lib/prelude-types";
-import {
-  addGuestsAction,
-  adminLogin,
-  deleteEventAction,
-  removeGuestAction,
-  saveEventAction,
-} from "./actions";
+import type { AdminState, GuestRow } from "../../../lib/prelude-types";
+import { addGuestsAction, adminLogin, removeGuestAction } from "./actions";
 
 const inputClass =
   "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-maroon focus:ring-2 focus:ring-maroon/20";
 const primaryButton =
   "rounded-full bg-maroon px-5 py-2 text-sm font-medium text-cream transition hover:bg-maroon/90 disabled:opacity-60";
-const ghostButton =
-  "rounded-full border border-gold/50 px-4 py-2 text-sm text-ink transition hover:bg-gold/10 disabled:opacity-60";
 const cardClass = "rounded-2xl border border-gold/30 bg-white/60 p-5";
 
 export function AdminLogin() {
@@ -50,69 +36,18 @@ export function AdminLogin() {
   );
 }
 
-type EventForm = {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  venue: string;
-  details: string;
-  dressCode: string;
-  locationUrl: string;
-  audience: Audience;
-  sortOrder: string;
-};
-
-function emptyEventForm(): EventForm {
-  return {
-    id: "",
-    title: "",
-    date: "",
-    time: "",
-    venue: "",
-    details: "",
-    dressCode: "",
-    locationUrl: "",
-    audience: "guests",
-    sortOrder: "0",
-  };
-}
-
-function toForm(e: PreludeEvent): EventForm {
-  return {
-    id: e.id,
-    title: e.title,
-    date: e.date ?? "",
-    time: e.time,
-    venue: e.venue,
-    details: e.details,
-    dressCode: e.dressCode,
-    locationUrl: e.locationUrl,
-    audience: e.audience,
-    sortOrder: String(e.sortOrder),
-  };
-}
-
 export default function AdminPanel({
   guests,
-  events,
   databaseConnected,
   loadError,
 }: {
   guests: GuestRow[];
-  events: PreludeEvent[];
   databaseConnected: boolean;
   loadError: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
-
-  // Guests
   const [pasted, setPasted] = useState("");
   const [guestMessage, setGuestMessage] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
-
-  // Events
-  const [eventForm, setEventForm] = useState<EventForm>(emptyEventForm);
-  const [eventMessage, setEventMessage] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
 
   function addGuests(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -143,46 +78,14 @@ export default function AdminPanel({
     });
   }
 
-  function saveEvent(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setEventMessage(null);
-    startTransition(async () => {
-      const result = await saveEventAction({
-        id: eventForm.id || undefined,
-        title: eventForm.title,
-        date: eventForm.date || null,
-        time: eventForm.time,
-        venue: eventForm.venue,
-        details: eventForm.details,
-        dressCode: eventForm.dressCode,
-        locationUrl: eventForm.locationUrl,
-        audience: eventForm.audience,
-        sortOrder: Number(eventForm.sortOrder) || 0,
-      });
-      if (!result.ok) {
-        setEventMessage({ tone: "err", text: result.error });
-        return;
-      }
-      setEventForm(emptyEventForm());
-      setEventMessage({ tone: "ok", text: "Event saved." });
-    });
-  }
-
-  function removeEvent(e: PreludeEvent) {
-    if (!window.confirm(`Delete "${e.title}"?`)) return;
-    setEventMessage(null);
-    startTransition(async () => {
-      const result = await deleteEventAction(e.id);
-      if (!result.ok) setEventMessage({ tone: "err", text: result.error });
-      else if (eventForm.id === e.id) setEventForm(emptyEventForm());
-    });
-  }
-
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20 pt-10 sm:px-6">
       <header>
         <p className="text-xs uppercase tracking-[0.35em] text-gold">Admin</p>
         <h1 className="mt-2 font-display text-4xl font-medium text-maroon sm:text-5xl">Pre-wedding</h1>
+        <p className="mt-2 text-sm text-ink/70">
+          Events are set in <code>lib/prelude-events.ts</code>, so they are not managed here.
+        </p>
       </header>
 
       {!databaseConnected ? (
@@ -192,11 +95,10 @@ export default function AdminPanel({
       ) : null}
       {loadError ? (
         <p role="alert" className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
-          Couldn&rsquo;t load the guest list or events. Refresh to try again.
+          Couldn&rsquo;t load the guest list. Refresh to try again.
         </p>
       ) : null}
 
-      {/* Guest list */}
       <section aria-label="Guest list" className={`${cardClass} mt-8`}>
         <h2 className="font-display text-2xl text-maroon">Guest list</h2>
         <p className="mt-1 text-sm text-ink/70">
@@ -247,107 +149,6 @@ export default function AdminPanel({
             ))}
           </ul>
         )}
-      </section>
-
-      {/* Events */}
-      <section aria-label="Events" className={`${cardClass} mt-8`}>
-        <h2 className="font-display text-2xl text-maroon">Events</h2>
-        <p className="mt-1 text-sm text-ink/70">
-          &ldquo;Everyone&rdquo; events are visible to all visitors. &ldquo;Guests on the list&rdquo; events show only after a
-          guest signs in with a number on the list.
-        </p>
-
-        <ul className="mt-4 divide-y divide-gold/20">
-          {events.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">{e.title}</p>
-                <p className="text-xs text-ink/60">
-                  {e.date ?? "Date TBA"}
-                  {e.time ? ` · ${e.time}` : ""} · {e.audience === "everyone" ? "Everyone" : "Guests on the list"}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEventForm(toForm(e))}
-                className="text-maroon underline-offset-2 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => removeEvent(e)}
-                disabled={isPending}
-                className="text-ink/60 underline-offset-2 hover:text-maroon hover:underline"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-
-        <form onSubmit={saveEvent} className="mt-6 grid gap-3 sm:grid-cols-6">
-          <p className="text-sm font-medium text-ink sm:col-span-6">
-            {eventForm.id ? "Edit event" : "Add event"}
-          </p>
-          <div className="sm:col-span-3">
-            <label className="mb-1 block text-xs text-ink/60">Title</label>
-            <input required maxLength={80} value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-3">
-            <label className="mb-1 block text-xs text-ink/60">Who can see it</label>
-            <select value={eventForm.audience} onChange={(e) => setEventForm({ ...eventForm, audience: e.target.value as Audience })} className={inputClass}>
-              <option value={AUDIENCES[0]}>Everyone</option>
-              <option value={AUDIENCES[1]}>Guests on the list</option>
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs text-ink/60">Date (optional)</label>
-            <input type="date" value={eventForm.date} onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs text-ink/60">Time</label>
-            <input maxLength={40} placeholder="e.g. 10:00 AM onwards" value={eventForm.time} onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs text-ink/60">Order</label>
-            <input type="number" min="0" max="999" value={eventForm.sortOrder} onChange={(e) => setEventForm({ ...eventForm, sortOrder: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-6">
-            <label className="mb-1 block text-xs text-ink/60">Venue</label>
-            <input maxLength={120} value={eventForm.venue} onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-6">
-            <label className="mb-1 block text-xs text-ink/60">Details</label>
-            <textarea rows={3} maxLength={500} value={eventForm.details} onChange={(e) => setEventForm({ ...eventForm, details: e.target.value })} className={inputClass} />
-          </div>
-
-          <div className="sm:col-span-3">
-            <label className="mb-1 block text-xs text-ink/60">Dress code</label>
-            <input maxLength={120} placeholder="e.g. Traditional, pastel colours" value={eventForm.dressCode} onChange={(e) => setEventForm({ ...eventForm, dressCode: e.target.value })} className={inputClass} />
-          </div>
-          <div className="sm:col-span-3">
-            <label className="mb-1 block text-xs text-ink/60">Location link (Google Maps)</label>
-            <input type="url" maxLength={300} placeholder="https://maps.google.com/..." value={eventForm.locationUrl} onChange={(e) => setEventForm({ ...eventForm, locationUrl: e.target.value })} className={inputClass} />
-          </div>
-
-          {eventMessage ? (
-            <p role="status" className={`text-sm sm:col-span-6 ${eventMessage.tone === "ok" ? "text-ink/70" : "text-maroon"}`}>
-              {eventMessage.text}
-            </p>
-          ) : null}
-
-          <div className="flex gap-2 sm:col-span-6">
-            <button type="submit" disabled={isPending || !databaseConnected} className={primaryButton}>
-              {eventForm.id ? "Save changes" : "Add event"}
-            </button>
-            {eventForm.id ? (
-              <button type="button" onClick={() => setEventForm(emptyEventForm())} className={ghostButton}>
-                Cancel edit
-              </button>
-            ) : null}
-          </div>
-        </form>
       </section>
     </main>
   );

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { databaseConfigured } from "../../lib/supabase";
-import { findGuest, listEvents } from "../../lib/prelude-store";
-import type { GuestRow, PreludeEvent } from "../../lib/prelude-types";
+import { findGuest } from "../../lib/prelude-store";
+import type { GuestRow } from "../../lib/prelude-types";
+import { PRELUDE_EVENTS } from "../../lib/prelude-events";
 import { currentGuestPhone, preludeConfigured } from "../../lib/prelude-auth";
 import GuestLogin from "./GuestLogin";
 import { EventList } from "./EventList";
@@ -11,23 +12,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Depends on the guest cookie and live data, so never cache or pre-render it.
+// Depends on the guest cookie and the guest list, so never cache or pre-render it.
 export const dynamic = "force-dynamic";
 
 export default async function PreludePage() {
   const configured = preludeConfigured() && databaseConfigured();
 
-  let events: PreludeEvent[] = [];
-  let loadError = false;
-  if (databaseConfigured()) {
-    try {
-      events = await listEvents();
-    } catch {
-      loadError = true;
-    }
-  }
-
-  // A signed-in guest sees everything. Everyone else sees only the main events.
+  // Guest matching uses the database. The events themselves are static.
   let guest: GuestRow | null = null;
   const phone = configured ? await currentGuestPhone() : null;
   if (phone) {
@@ -37,8 +28,10 @@ export default async function PreludePage() {
       guest = null;
     }
   }
-  const visible = guest ? events : events.filter((e) => e.audience === "everyone");
-  const mainEvents = events.filter((e) => e.audience === "everyone");
+
+  // A signed-in guest sees everything. Everyone else sees only the main events.
+  const mainEvents = PRELUDE_EVENTS.filter((e) => e.audience === "everyone");
+  const visible = guest ? PRELUDE_EVENTS : mainEvents;
 
   return (
     <main className="mx-auto max-w-4xl px-4 pb-20 pt-12 sm:px-6">
@@ -64,11 +57,6 @@ export default async function PreludePage() {
         <p role="status" className="mt-10 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           This page isn&rsquo;t set up yet. Add the Supabase variables and PRELUDE_SESSION_SECRET
           in Vercel, then redeploy.
-        </p>
-      ) : null}
-      {loadError ? (
-        <p role="alert" className="mt-10 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
-          Couldn&rsquo;t load the events. Refresh the page to try again.
         </p>
       ) : null}
 

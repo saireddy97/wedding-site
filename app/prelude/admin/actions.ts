@@ -1,23 +1,12 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { clearFailures, recordFailure, tooManyAttempts } from "../../../lib/auth";
 import { databaseConfigured } from "../../../lib/supabase";
-import {
-  addGuests,
-  deleteEvent,
-  deleteGuest,
-  putEvent,
-} from "../../../lib/prelude-store";
-import {
-  parsePhoneList,
-  validateEvent,
-  type ActionResult,
-  type AdminState,
-} from "../../../lib/prelude-types";
+import { addGuests, deleteGuest } from "../../../lib/prelude-store";
+import { parsePhoneList, type ActionResult, type AdminState } from "../../../lib/prelude-types";
 import {
   adminConfigured,
   adminPasswordMatches,
@@ -26,7 +15,6 @@ import {
 } from "../../../lib/prelude-auth";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const ID_RE = /^[0-9a-f-]{36}$/i;
 const MAX_PASTE = 20000;
 
 async function clientKey(): Promise<string> {
@@ -99,39 +87,5 @@ export async function removeGuestAction(phone: string): Promise<ActionResult> {
   }
   revalidatePath("/prelude/admin");
   revalidatePath("/prelude");
-  return { ok: true };
-}
-
-export async function saveEventAction(input: unknown): Promise<ActionResult> {
-  const blocked = await guard();
-  if (blocked) return { ok: false, error: blocked };
-
-  const parsed = validateEvent(input);
-  if (!parsed.ok) return parsed;
-
-  const rawId = typeof (input as { id?: unknown })?.id === "string" ? (input as { id: string }).id : "";
-  const id = ID_RE.test(rawId) ? rawId : randomUUID();
-
-  try {
-    await putEvent({ id, ...parsed.value });
-  } catch {
-    return { ok: false, error: "Couldn't save the event. Please try again." };
-  }
-  revalidatePath("/prelude");
-  revalidatePath("/prelude/admin");
-  return { ok: true };
-}
-
-export async function deleteEventAction(id: string): Promise<ActionResult> {
-  const blocked = await guard();
-  if (blocked) return { ok: false, error: blocked };
-  if (typeof id !== "string" || !ID_RE.test(id)) return { ok: false, error: "Invalid event." };
-  try {
-    await deleteEvent(id);
-  } catch {
-    return { ok: false, error: "Couldn't delete the event. Please try again." };
-  }
-  revalidatePath("/prelude");
-  revalidatePath("/prelude/admin");
   return { ok: true };
 }
