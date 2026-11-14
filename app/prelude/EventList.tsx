@@ -130,7 +130,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
       {open && typeof document !== "undefined"
         ? createPortal(
             <div
-              className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center sm:p-6"
+              className="fixed inset-0 z-50 flex items-stretch justify-center bg-ink/40 sm:items-center sm:p-6"
               onClick={() => setOpenId(null)}
             >
               <div
@@ -138,7 +138,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
                 aria-modal="true"
                 aria-labelledby="event-dialog-title"
                 onClick={(ev) => ev.stopPropagation()}
-                className={`fade-up relative max-h-[90vh] w-full overflow-y-auto rounded-t-3xl p-6 shadow-xl sm:max-w-lg sm:rounded-3xl sm:p-8 ${
+                className={`fade-up relative h-[100dvh] w-full overflow-y-auto p-4 shadow-xl sm:h-auto sm:max-h-[90vh] sm:max-w-lg sm:rounded-3xl sm:p-8 ${
                   isHaldi ? "bg-[#fdf7e3]" : "bg-cream"
                 }`}
               >
