@@ -4,6 +4,7 @@ import { findGuest, listEvents } from "../../lib/prelude-store";
 import type { GuestRow, PreludeEvent } from "../../lib/prelude-types";
 import { currentGuestPhone, preludeConfigured } from "../../lib/prelude-auth";
 import GuestLogin from "./GuestLogin";
+import { EventList } from "./EventList";
 
 export const metadata: Metadata = {
   title: "Pre-wedding",
@@ -12,37 +13,6 @@ export const metadata: Metadata = {
 
 // Depends on the guest cookie and live data, so never cache or pre-render it.
 export const dynamic = "force-dynamic";
-
-function formatDate(value: string | null): string {
-  if (!value) return "Date to be announced";
-  const [y, m, d] = value.split("-").map(Number);
-  if (!y || !m || !d) return value;
-  return new Date(y, m - 1, d).toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function EventList({ events }: { events: PreludeEvent[] }) {
-  if (events.length === 0) {
-    return <p className="text-sm text-ink/60">Details will be shared soon.</p>;
-  }
-  return (
-    <ul className="grid gap-4 sm:grid-cols-2">
-      {events.map((e) => (
-        <li key={e.id} className="rounded-2xl border border-gold/30 bg-white/60 p-5">
-          <h3 className="font-display text-2xl text-maroon">{e.title}</h3>
-          <p className="mt-2 text-sm text-ink/80">{formatDate(e.date)}</p>
-          {e.time ? <p className="text-sm text-ink/80">{e.time}</p> : null}
-          {e.venue ? <p className="mt-1 text-sm text-ink/70">{e.venue}</p> : null}
-          {e.details ? <p className="mt-3 whitespace-pre-line text-sm text-ink/70">{e.details}</p> : null}
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 export default async function PreludePage() {
   const configured = preludeConfigured() && databaseConfigured();
@@ -93,14 +63,15 @@ export default async function PreludePage() {
       ) : null}
 
       {!guest ? (
+        // Not signed in: only the form. Main events appear after a sign-in attempt.
         <div className="mt-10">
-          <GuestLogin />
+          <GuestLogin mainEvents={mainEvents} />
         </div>
-      ) : null}
-
-      <section aria-label="Events" className="mt-10">
-        <EventList events={guest ? visible : mainEvents} />
-      </section>
+      ) : (
+        <section aria-label="Events" className="mt-10">
+          <EventList events={visible} />
+        </section>
+      )}
     </main>
   );
 }

@@ -3,11 +3,13 @@
 import { useActionState } from "react";
 import type { GuestState } from "../../lib/prelude-types";
 import { loginGuest } from "./actions";
+import { EventList } from "./EventList";
+import type { PreludeEvent } from "../../lib/prelude-types";
 
 const inputClass =
   "w-full rounded-lg border border-gold/40 bg-white px-4 py-3 outline-none focus:border-maroon focus:ring-2 focus:ring-maroon/20";
 
-export default function GuestLogin() {
+export default function GuestLogin({ mainEvents }: { mainEvents: PreludeEvent[] }) {
   const [state, formAction, pending] = useActionState<GuestState, FormData>(loginGuest, undefined);
 
   return (
@@ -68,6 +70,12 @@ export default function GuestLogin() {
           </button>
         </div>
       </form>
+
+      {state?.note ? (
+        <div className="mt-8 border-t border-gold/30 pt-6">
+          <EventList events={mainEvents} />
+        </div>
+      ) : null}
     </section>
   );
 }

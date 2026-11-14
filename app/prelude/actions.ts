@@ -40,7 +40,7 @@ export async function loginGuest(_prev: GuestState, formData: FormData): Promise
   if (!guest) {
     await recordFailure(key);
     return {
-      note: "That number isn't on the guest list. You can still see the main events below.",
+      note: "That number isn't on the guest list. Here are the main events.",
     };
   }
 
