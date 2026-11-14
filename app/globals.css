@@ -49,3 +49,38 @@ body {
     opacity: 1;
   }
 }
+
+@keyframes draw-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.draw-line {
+  transform-origin: center;
+  animation: draw-line 1.4s ease-out 0.3s both;
+}
+
+/* Lift on hover. Keep this on an inner element: fade-up uses transform too. */
+.card-lift {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px -14px rgb(122 31 43 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw-line {
+    animation: none;
+  }
+  .card-lift,
+  .card-lift:hover {
+    transition: none;
+    transform: none;
+  }
+}

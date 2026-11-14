@@ -43,11 +43,21 @@ export default async function PreludePage() {
   return (
     <main className="mx-auto max-w-4xl px-4 pb-20 pt-12 sm:px-6">
       <header className="text-center">
-        <p className="text-xs uppercase tracking-[0.35em] text-gold">Sai &amp; Harshitha</p>
-        <h1 className="mt-3 font-display text-5xl font-medium text-maroon sm:text-6xl">
+        <p className="fade-up text-xs uppercase tracking-[0.35em] text-gold" style={{ animationDelay: "0.05s" }}>
+          Sai &amp; Harshitha
+        </p>
+        <h1
+          className="fade-up mt-3 font-display text-5xl font-medium text-maroon sm:text-6xl"
+          style={{ animationDelay: "0.15s" }}
+        >
           Events
         </h1>
-        {guest?.name ? <p className="mt-3 text-sm text-ink/70">Welcome, {guest.name}</p> : null}
+        <div aria-hidden className="draw-line mx-auto mt-6 h-px w-24 bg-gold/70" />
+        {guest?.name ? (
+          <p className="fade-up mt-4 text-sm text-ink/70" style={{ animationDelay: "0.4s" }}>
+            Welcome, {guest.name}
+          </p>
+        ) : null}
       </header>
 
       {!configured ? (
@@ -64,7 +74,7 @@ export default async function PreludePage() {
 
       {!guest ? (
         // Not signed in: only the form. Main events appear after a sign-in attempt.
-        <div className="mt-10">
+        <div className="fade-up mt-10" style={{ animationDelay: "0.35s" }}>
           <GuestLogin mainEvents={mainEvents} />
         </div>
       ) : (

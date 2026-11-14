@@ -72,7 +72,7 @@ export default function GuestLogin({ mainEvents }: { mainEvents: PreludeEvent[] 
       </form>
 
       {state?.note ? (
-        <div className="mt-8 border-t border-gold/30 pt-6">
+        <div className="fade-up mt-8 border-t border-gold/30 pt-6">
           <EventList events={mainEvents} />
         </div>
       ) : null}
