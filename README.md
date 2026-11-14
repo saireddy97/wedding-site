@@ -54,3 +54,23 @@ How it is protected:
 To change the password later, update `EXPENSES_PASSWORD` in Vercel and redeploy.
 
 Local development: put the same variables in a `.env.local` file (it is git-ignored).
+
+## Pre-wedding page (`/prelude`) and admin (`/prelude/admin`)
+
+Guests enter their name and mobile number. If the number is on the guest list, they see all events, including the pre-wedding ones. Anyone else sees only the main events (Pellikuturu, Pellikoduku, Marriage).
+
+Setup:
+
+1. **Tables:** In Supabase SQL Editor, run `supabase/prelude-schema.sql`. It creates the guest and event tables and adds the three main events. Safe to run again.
+2. **Variables:** In Vercel, add:
+   - `PRELUDE_SESSION_SECRET`: a long random string, used to sign guest sessions.
+   - `PRELUDE_ADMIN_PASSWORD`: the password for `/prelude/admin`. Changing it signs out the admin.
+3. **Redeploy.**
+4. Open `/prelude/admin`, sign in, and paste the guest numbers. Then edit the events (dates, times, venues, and who can see each one).
+
+How it works:
+
+- Numbers are matched on the 10 digits, so `+91`, spaces and a leading `0` all work.
+- A guest's name is saved the first time they sign in. Later sign-ins don't change it.
+- Guest sessions last 30 days. Sign-in attempts from one IP are limited to 5 misses per 15 minutes.
+- The pages are marked `noindex`.
