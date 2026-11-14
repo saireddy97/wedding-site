@@ -50,7 +50,7 @@ export default async function EventPage({ params }: Props) {
 
       <div className="mt-4">
         {event.id === "haldi" ? (
-          <HaldiHeader event={event} />
+          <HaldiHeader />
         ) : (
           <>
             <EventBanner event={event} />
