@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
   clearFailures,
-  clearSession,
   isAuthed,
   isConfigured,
   passwordMatches,
@@ -46,11 +45,6 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   await clearFailures(ip);
   await setSession();
-  redirect("/expenses");
-}
-
-export async function logout(): Promise<void> {
-  await clearSession();
   redirect("/expenses");
 }
 

@@ -68,11 +68,6 @@ export async function setSession(): Promise<void> {
   });
 }
 
-export async function clearSession(): Promise<void> {
-  const jar = await cookies();
-  jar.set(COOKIE_NAME, "", { path: COOKIE_PATH, maxAge: 0 });
-}
-
 // Brute-force protection: after 5 wrong passwords from one IP, lock that IP out for
 // 15 minutes (counted from the first wrong attempt). Stored in the login_attempts
 // table. If the database is down we fail open so you can still get in.

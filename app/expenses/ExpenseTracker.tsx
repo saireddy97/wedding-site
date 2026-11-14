@@ -6,7 +6,7 @@ import {
   type Expense,
   type ExpenseStatus,
 } from "../../lib/expense-types";
-import { logout, removeExpense, saveExpense } from "./actions";
+import { removeExpense, saveExpense } from "./actions";
 
 type Props = {
   expenses: Expense[];
@@ -246,11 +246,6 @@ export default function ExpenseTracker({
             Wedding expenses
           </h1>
         </div>
-        <form action={logout}>
-          <button type="submit" className={ghostButton}>
-            Sign out
-          </button>
-        </form>
       </header>
 
       {!databaseConnected ? (
