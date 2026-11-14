@@ -53,5 +53,5 @@ export async function loginGuest(_prev: GuestState, formData: FormData): Promise
     }
   }
   await setGuestSession(phone);
-  redirect("/prelude");
+  redirect("/events");
 }

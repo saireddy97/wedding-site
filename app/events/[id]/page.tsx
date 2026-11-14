@@ -39,12 +39,12 @@ export default async function EventPage({ params }: Props) {
         guest = null;
       }
     }
-    if (!guest) redirect("/prelude");
+    if (!guest) redirect("/events");
   }
 
   return (
     <main className="mx-auto max-w-md px-4 pb-16 pt-6 sm:max-w-lg sm:px-6">
-      <Link href="/prelude" className="text-sm text-maroon underline-offset-2 hover:underline">
+      <Link href="/events" className="text-sm text-maroon underline-offset-2 hover:underline">
         ← All events
       </Link>
 

@@ -69,7 +69,7 @@ export async function addGuestsAction(
   } catch {
     return { ok: false, error: "Couldn't save the numbers. Please try again." };
   }
-  revalidatePath("/prelude");
+  revalidatePath("/events");
   revalidatePath("/prelude/admin");
   return { ok: true, saved: phones.length, invalid };
 }
@@ -86,6 +86,6 @@ export async function removeGuestAction(phone: string): Promise<ActionResult> {
     return { ok: false, error: "Couldn't remove that guest. Please try again." };
   }
   revalidatePath("/prelude/admin");
-  revalidatePath("/prelude");
+  revalidatePath("/events");
   return { ok: true };
 }

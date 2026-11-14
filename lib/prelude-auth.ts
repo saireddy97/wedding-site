@@ -9,7 +9,8 @@ import { makeToken, readToken } from "./signed-token";
 
 const GUEST_COOKIE = "prelude_guest";
 const ADMIN_COOKIE = "prelude_admin";
-const COOKIE_PATH = "/prelude";
+const ADMIN_COOKIE_PATH = "/prelude";
+const GUEST_COOKIE_PATH = "/events";
 const GUEST_MAX_AGE = 60 * 60 * 24 * 90;
 const ADMIN_MAX_AGE = 60 * 60 * 12;
 
@@ -60,7 +61,7 @@ export async function setGuestSession(phone: string): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: COOKIE_PATH,
+    path: GUEST_COOKIE_PATH,
     maxAge: GUEST_MAX_AGE,
   });
 }
@@ -83,7 +84,7 @@ export async function setAdminSession(): Promise<void> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: COOKIE_PATH,
+    path: ADMIN_COOKIE_PATH,
     maxAge: ADMIN_MAX_AGE,
   });
 }

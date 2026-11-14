@@ -6,7 +6,7 @@ Currently a "coming soon" page plus a private expense tracker. Planned next:
 
 - `/` public wedding landing page (currently "coming soon")
 - `/expenses` password-protected expense tracker (built, see setup below)
-- `/prelude` guest-only page (pre-wedding content, quests, leaderboard, Groom vs Bride scores), gated by phone number
+- `/events` guest-only page (pre-wedding content, quests, leaderboard, Groom vs Bride scores), gated by phone number
 - `/admin` password-protected dashboard
 
 ## Run locally
@@ -55,7 +55,7 @@ To change the password later, update `EXPENSES_PASSWORD` in Vercel and redeploy.
 
 Local development: put the same variables in a `.env.local` file (it is git-ignored).
 
-## Pre-wedding page (`/prelude`) and admin (`/prelude/admin`)
+## Pre-wedding page (`/events`) and admin (`/prelude/admin`)
 
 Guests enter their name and mobile number. If the number is on the guest list, they see all events, including the pre-wedding ones. Anyone else sees only the main events (Pellikuturu, Pellikoduku, Marriage).
 

@@ -13,7 +13,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
       {events.map((e, i) => (
         <li key={e.id} className="fade-up" style={{ animationDelay: `${0.15 + i * 0.12}s` }}>
           <Link
-            href={`/prelude/${e.id}`}
+            href={`/events/${e.id}`}
             className="card-lift block h-full rounded-2xl border border-gold/30 bg-white/60 p-5"
           >
             <h3 className="font-display text-2xl text-maroon">{e.title}</h3>
