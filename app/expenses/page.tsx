@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { isAuthed, isConfigured } from "../../lib/auth";
-import { redisConfigured } from "../../lib/redis";
+import { databaseConfigured } from "../../lib/supabase";
 import { getBudget, listExpenses } from "../../lib/expense-store";
 import type { Expense } from "../../lib/expense-types";
 import ExpenseTracker from "./ExpenseTracker";
@@ -28,7 +28,7 @@ export default async function ExpensesPage() {
   // The expense data is only ever fetched after the password check passes.
   if (!(await isAuthed())) return <LoginForm />;
 
-  const databaseConnected = redisConfigured();
+  const databaseConnected = databaseConfigured();
   let expenses: Expense[] = [];
   let budget = 0;
   let loadError = false;

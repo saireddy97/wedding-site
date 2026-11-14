@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { redis, redisConfigured } from "./redis";
+import { databaseConfigured, supabase } from "./supabase";
 
 // Password protection for /expenses.
 // - The password lives only in the EXPENSES_PASSWORD env var (never in the code).
@@ -12,7 +12,7 @@ export const COOKIE_PATH = "/expenses";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_SECONDS = 15 * 60;
+const LOCKOUT_MS = 15 * 60 * 1000;
 
 export function isConfigured(): boolean {
   return Boolean(process.env.EXPENSES_PASSWORD);
@@ -74,35 +74,55 @@ export async function clearSession(): Promise<void> {
 }
 
 // Brute-force protection: after 5 wrong passwords from one IP, lock that IP out for
-// 15 minutes. Needs Redis; if Redis is down we fail open so you can still get in.
-function failKey(ip: string): string {
-  return `wedding:expenses:fail:${ip}`;
+// 15 minutes (counted from the first wrong attempt). Stored in the login_attempts
+// table. If the database is down we fail open so you can still get in.
+type Attempts = { attempts: number; windowStart: number };
+
+async function readAttempts(ip: string): Promise<Attempts | null> {
+  const rows = await supabase<{ attempts: number; window_start: string }[]>(
+    `login_attempts?ip=eq.${encodeURIComponent(ip)}&select=attempts,window_start`,
+  );
+  const row = rows?.[0];
+  if (!row) return null;
+  return { attempts: row.attempts, windowStart: Date.parse(row.window_start) };
 }
 
 export async function tooManyAttempts(ip: string): Promise<boolean> {
-  if (!redisConfigured()) return false;
+  if (!databaseConfigured()) return false;
   try {
-    const count = await redis<string | number | null>(["GET", failKey(ip)]);
-    return Number(count ?? 0) >= MAX_FAILED_ATTEMPTS;
+    const current = await readAttempts(ip);
+    if (!current) return false;
+    const stillInWindow = Date.now() - current.windowStart < LOCKOUT_MS;
+    return stillInWindow && current.attempts >= MAX_FAILED_ATTEMPTS;
   } catch {
     return false;
   }
 }
 
 export async function recordFailure(ip: string): Promise<void> {
-  if (!redisConfigured()) return;
+  if (!databaseConfigured()) return;
   try {
-    const count = await redis<number>(["INCR", failKey(ip)]);
-    if (count === 1) await redis(["EXPIRE", failKey(ip), LOCKOUT_SECONDS]);
+    const current = await readAttempts(ip);
+    const expired = !current || Date.now() - current.windowStart >= LOCKOUT_MS;
+    const attempts = expired || !current ? 1 : current.attempts + 1;
+    const windowStart = expired || !current ? Date.now() : current.windowStart;
+    await supabase("login_attempts?on_conflict=ip", {
+      method: "POST",
+      prefer: "resolution=merge-duplicates,return=minimal",
+      body: { ip, attempts, window_start: new Date(windowStart).toISOString() },
+    });
   } catch {
     // ignore
   }
 }
 
 export async function clearFailures(ip: string): Promise<void> {
-  if (!redisConfigured()) return;
+  if (!databaseConfigured()) return;
   try {
-    await redis(["DEL", failKey(ip)]);
+    await supabase(`login_attempts?ip=eq.${encodeURIComponent(ip)}`, {
+      method: "DELETE",
+      prefer: "return=minimal",
+    });
   } catch {
     // ignore
   }

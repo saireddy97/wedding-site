@@ -33,7 +33,13 @@ Add both `saiandharshiwedding.in` and `www.saiandharshiwedding.in` in Vercel. Pi
 The page is locked behind a password that is checked on the server. It needs one password and one database.
 
 1. **Password:** In Vercel, open the project's **Settings > Environment Variables** and add `EXPENSES_PASSWORD` with a long, unique password (a passphrase of 4+ random words works well). Optionally add `EXPENSES_SESSION_SECRET` with any long random string; if you leave it out, the password itself is used to sign the login cookie.
-2. **Database:** In the project's **Storage** tab, add an **Upstash Redis** database from the Marketplace (the free plan is plenty) and connect it to this project. This sets `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or the `KV_REST_API_*` equivalents) automatically.
+2. **Database (Supabase):**
+   1. Create a project at supabase.com (free plan).
+   2. In the Supabase dashboard, open **SQL Editor**, paste the contents of `supabase/schema.sql`, and click **Run**. It creates the tables and locks them down. It's safe to run again.
+   3. In **Project Settings > API**, copy the **Project URL** and the **secret** key (`sb_secret_...`, or the `service_role` key on older projects).
+   4. In Vercel, add these environment variables: `SUPABASE_URL` (the Project URL) and `SUPABASE_SECRET_KEY` (the secret key). Never use a `NEXT_PUBLIC_` prefix for the secret key.
+   
+   Free projects pause after 1 week with no activity. Open the Supabase dashboard and restore the project if it's paused, especially before the wedding.
 3. **Redeploy:** Environment variable changes only apply to new deployments, so trigger a redeploy (Deployments tab, the menu on the latest one, Redeploy).
 4. Open `/expenses` and sign in.
 

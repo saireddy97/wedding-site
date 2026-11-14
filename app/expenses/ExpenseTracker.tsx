@@ -253,8 +253,8 @@ export default function ExpenseTracker({
 
       {!databaseConnected ? (
         <p role="status" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          The database isn&rsquo;t connected yet, so expenses can&rsquo;t be saved. Add an
-          Upstash Redis database to this project in Vercel (Storage tab) and redeploy.
+          The database isn&rsquo;t connected yet, so expenses can&rsquo;t be saved. Add the
+          Supabase environment variables to this project in Vercel and redeploy.
         </p>
       ) : null}
       {loadError ? (

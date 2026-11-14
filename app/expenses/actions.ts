@@ -14,7 +14,7 @@ import {
   setSession,
   tooManyAttempts,
 } from "../../lib/auth";
-import { redisConfigured } from "../../lib/redis";
+import { databaseConfigured } from "../../lib/supabase";
 import {
   deleteExpense,
   putExpense,
@@ -61,7 +61,7 @@ export async function logout(): Promise<void> {
 // in the browser is never the only protection.
 async function guard(): Promise<string | null> {
   if (!(await isAuthed())) return "Your session expired. Please sign in again.";
-  if (!redisConfigured()) return "The database isn't connected yet.";
+  if (!databaseConfigured()) return "The database isn't connected yet.";
   return null;
 }
 
