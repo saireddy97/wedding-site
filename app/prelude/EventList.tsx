@@ -38,65 +38,39 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-// A row of marigold blooms along a gentle curve. Drawn here, not copied from any artwork.
-function MarigoldGarland({ className }: { className?: string }) {
-  const count = 11;
-  const blooms = Array.from({ length: count }, (_, i) => {
-    const t = i / (count - 1);
-    const x = 400 * t;
-    const y = (1 - t) * (1 - t) * 14 + 2 * t * (1 - t) * 58 + t * t * 14;
-    return { x, y, r: i % 2 === 0 ? 11 : 9 };
-  });
-  return (
-    <svg viewBox="0 0 400 70" className={className} aria-hidden preserveAspectRatio="none">
-      <path d="M0 14 Q200 58 400 14" fill="none" stroke="#6b8e23" strokeWidth="3" />
-      {blooms.map((b, i) => (
-        <g key={i}>
-          <ellipse cx={b.x - 9} cy={b.y + 6} rx="9" ry="4" fill="#7fae3a" opacity="0.85" transform={`rotate(-25 ${b.x - 9} ${b.y + 6})`} />
-          <ellipse cx={b.x + 9} cy={b.y + 6} rx="9" ry="4" fill="#7fae3a" opacity="0.85" transform={`rotate(25 ${b.x + 9} ${b.y + 6})`} />
-          <circle cx={b.x} cy={b.y} r={b.r} fill="#f29c1f" />
-          <circle cx={b.x} cy={b.y} r={b.r * 0.55} fill="#ffd34d" />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
 function HaldiHeader({ event }: { event: PreludeEvent }) {
   const parts = dateParts(event.date);
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#ffe9a0] to-[#fdf7e3] px-5 pb-10 pt-12 text-center ring-1 ring-[#e0b34a]/60">
-      <MarigoldGarland className="absolute left-0 top-0 h-14 w-full" />
-      <h3 id="event-dialog-title" className="font-display text-5xl italic text-[#5f8a1f]">
-        Haldi
-      </h3>
+    <div
+      className="relative aspect-[896/1195] w-full overflow-hidden rounded-2xl bg-cover bg-center"
+      style={{ backgroundImage: "url(/prelude/haldi-bg.jpg)", backgroundColor: "#fdf3d8" }}
+    >
+      <div className="absolute inset-x-0 top-[26%] flex flex-col items-center px-6 text-center">
+        <h3 id="event-dialog-title" className="font-display text-6xl italic text-[#4f7d1c]">
+          Haldi
+        </h3>
 
-      {parts ? (
-        <div className="mt-6 flex items-center justify-center gap-4 text-[#7a1f2b]">
-          <div className="text-right">
-            <p className="font-display text-lg leading-tight">{parts.weekday}</p>
+        {parts ? (
+          <div className="mt-4 flex items-center justify-center gap-3 text-[#7a1f2b]">
+            <p className="font-display text-xl">{parts.weekday}</p>
+            <p className="rounded-md border-2 border-[#4f7d1c] bg-white/80 px-3 py-0.5 font-display text-4xl text-[#4f7d1c]">
+              {parts.day}
+            </p>
+            <p className="font-display text-xl">{parts.monthYear}</p>
           </div>
-          <div className="rounded-md border-2 border-[#5f8a1f] bg-white/60 px-4 py-1">
-            <p className="font-display text-4xl leading-tight text-[#5f8a1f]">{parts.day}</p>
+        ) : null}
+
+        {event.time ? (
+          <p className="mt-4 text-sm uppercase tracking-[0.2em] text-[#6b2a1a]">{event.time}</p>
+        ) : null}
+
+        {event.venue ? (
+          <div className="mt-4">
+            <p className="font-display text-2xl italic text-[#4f7d1c]">Venue</p>
+            <p className="mt-1 text-sm text-[#5a2a1a]">{event.venue}</p>
           </div>
-          <div>
-            <p className="font-display text-lg leading-tight">{parts.monthYear}</p>
-          </div>
-        </div>
-      ) : null}
-
-      {event.time ? (
-        <p className="mt-5 text-sm uppercase tracking-[0.2em] text-[#6b4a1a]">{event.time}</p>
-      ) : null}
-
-      {event.venue ? (
-        <div className="mt-5">
-          <p className="font-display text-2xl italic text-[#5f8a1f]">Venue</p>
-          <p className="mt-1 text-sm text-[#5a3d1a]">{event.venue}</p>
-        </div>
-      ) : null}
-
-      <MarigoldGarland className="absolute bottom-0 left-0 h-14 w-full rotate-180" />
+        ) : null}
+      </div>
     </div>
   );
 }
