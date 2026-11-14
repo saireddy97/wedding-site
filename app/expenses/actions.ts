@@ -15,20 +15,17 @@ import {
   tooManyAttempts,
 } from "../../lib/auth";
 import { databaseConfigured } from "../../lib/supabase";
+import { deleteExpense, putExpenses } from "../../lib/expense-store";
 import {
-  deleteExpense,
-  putExpense,
-  setBudget,
-} from "../../lib/expense-store";
-import {
-  validateBudget,
   validateExpense,
   type ActionResult,
+  type Expense,
   type ExpenseInput,
   type LoginState,
 } from "../../lib/expense-types";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   if (!isConfigured()) return { error: "This page isn't set up yet." };
@@ -72,13 +69,34 @@ export async function saveExpense(input: ExpenseInput): Promise<ActionResult> {
   const parsed = validateExpense(input);
   if (!parsed.ok) return parsed;
 
-  const id =
-    typeof input.id === "string" && /^[A-Za-z0-9-]{8,64}$/.test(input.id)
-      ? input.id
-      : randomUUID();
+  const editing = typeof input.id === "string" && ID_RE.test(input.id);
+  if (editing && parsed.balance !== null) {
+    return { ok: false, error: "Add the balance when you create the expense, not when editing it." };
+  }
+
+  const id = editing ? (input.id as string) : randomUUID();
+  const rows: Expense[] = [{ id, ...parsed.value }];
+
+  // A paid expense with a balance also creates a pending row for the rest.
+  if (!editing && parsed.balance !== null) {
+    const base =
+      parsed.value.description.length > 100
+        ? parsed.value.description.slice(0, 100)
+        : parsed.value.description;
+    rows.push({
+      id: randomUUID(),
+      date: parsed.value.date,
+      description: `${base} (balance)`,
+      category: parsed.value.category,
+      amount: parsed.balance,
+      paidBy: "",
+      status: "pending",
+      remarks: "",
+    });
+  }
 
   try {
-    await putExpense({ id, ...parsed.value });
+    await putExpenses(rows);
   } catch {
     return { ok: false, error: "Couldn't save. Please try again." };
   }
@@ -89,7 +107,7 @@ export async function saveExpense(input: ExpenseInput): Promise<ActionResult> {
 export async function removeExpense(id: string): Promise<ActionResult> {
   const blocked = await guard();
   if (blocked) return { ok: false, error: blocked };
-  if (typeof id !== "string" || !/^[A-Za-z0-9-]{8,64}$/.test(id)) {
+  if (typeof id !== "string" || !ID_RE.test(id)) {
     return { ok: false, error: "Invalid expense." };
   }
 
@@ -97,22 +115,6 @@ export async function removeExpense(id: string): Promise<ActionResult> {
     await deleteExpense(id);
   } catch {
     return { ok: false, error: "Couldn't delete. Please try again." };
-  }
-  revalidatePath("/expenses");
-  return { ok: true };
-}
-
-export async function saveBudget(amount: number): Promise<ActionResult> {
-  const blocked = await guard();
-  if (blocked) return { ok: false, error: blocked };
-
-  const parsed = validateBudget(amount);
-  if (!parsed.ok) return parsed;
-
-  try {
-    await setBudget(parsed.value);
-  } catch {
-    return { ok: false, error: "Couldn't save the budget. Please try again." };
   }
   revalidatePath("/expenses");
   return { ok: true };

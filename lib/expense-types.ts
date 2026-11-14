@@ -1,5 +1,8 @@
 // Pure types and validation. Safe to import from both server and client code.
 
+// Fixed total wedding budget: ₹25,00,000 (25 lakh). Not editable in the app.
+export const WEDDING_BUDGET = 2500000;
+
 export const CATEGORIES = [
   "Venue",
   "Catering",
@@ -24,6 +27,7 @@ export type Expense = {
   amount: number;
   paidBy: string;
   status: ExpenseStatus;
+  remarks: string;
 };
 
 export type ExpenseInput = {
@@ -34,6 +38,9 @@ export type ExpenseInput = {
   amount: number;
   paidBy: string;
   status: ExpenseStatus;
+  remarks?: string;
+  // Only for a NEW paid expense: the amount still to pay. It is saved as its own pending row.
+  balance?: number | null;
 };
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -41,6 +48,7 @@ export type LoginState = { error?: string } | undefined;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_AMOUNT = 1_000_000_000;
+const MAX_REMARKS = 280;
 
 function isRealDate(value: string): boolean {
   if (!DATE_RE.test(value)) return false;
@@ -53,9 +61,11 @@ function isRealDate(value: string): boolean {
   );
 }
 
-export function validateExpense(
-  input: unknown,
-): { ok: true; value: Omit<Expense, "id"> } | { ok: false; error: string } {
+type Validated =
+  | { ok: true; value: Omit<Expense, "id">; balance: number | null }
+  | { ok: false; error: string };
+
+export function validateExpense(input: unknown): Validated {
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "Invalid expense." };
   }
@@ -87,6 +97,24 @@ export function validateExpense(
   const status = raw.status === "pending" ? "pending" : raw.status === "paid" ? "paid" : null;
   if (!status) return { ok: false, error: "Pick paid or pending." };
 
+  const remarks = typeof raw.remarks === "string" ? raw.remarks.trim() : "";
+  if (remarks.length > MAX_REMARKS) {
+    return { ok: false, error: `Remarks can be up to ${MAX_REMARKS} characters.` };
+  }
+
+  let balance: number | null = null;
+  if (raw.balance !== undefined && raw.balance !== null) {
+    const b = raw.balance;
+    if (typeof b !== "number" || !Number.isFinite(b) || b <= 0) {
+      return { ok: false, error: "Enter a balance greater than 0, or leave it empty." };
+    }
+    if (b > MAX_AMOUNT) return { ok: false, error: "That balance is too large." };
+    if (status !== "paid") {
+      return { ok: false, error: "A balance can only be added to a paid expense." };
+    }
+    balance = Math.round(b * 100) / 100;
+  }
+
   return {
     ok: true,
     value: {
@@ -97,16 +125,8 @@ export function validateExpense(
       amount: Math.round(amount * 100) / 100,
       paidBy,
       status,
+      remarks,
     },
+    balance,
   };
-}
-
-export function validateBudget(
-  value: unknown,
-): { ok: true; value: number } | { ok: false; error: string } {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    return { ok: false, error: "Enter a budget of 0 or more." };
-  }
-  if (value > MAX_AMOUNT * 10) return { ok: false, error: "That budget is too large." };
-  return { ok: true, value: Math.round(value * 100) / 100 };
 }

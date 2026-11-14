@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { isAuthed, isConfigured } from "../../lib/auth";
 import { databaseConfigured } from "../../lib/supabase";
-import { getBudget, listExpenses } from "../../lib/expense-store";
-import type { Expense } from "../../lib/expense-types";
+import { listExpenses } from "../../lib/expense-store";
+import { WEDDING_BUDGET, type Expense } from "../../lib/expense-types";
 import ExpenseTracker from "./ExpenseTracker";
 import LoginForm from "./LoginForm";
 
@@ -30,12 +30,11 @@ export default async function ExpensesPage() {
 
   const databaseConnected = databaseConfigured();
   let expenses: Expense[] = [];
-  let budget = 0;
   let loadError = false;
 
   if (databaseConnected) {
     try {
-      [expenses, budget] = await Promise.all([listExpenses(), getBudget()]);
+      expenses = await listExpenses();
     } catch {
       loadError = true;
     }
@@ -44,7 +43,7 @@ export default async function ExpensesPage() {
   return (
     <ExpenseTracker
       expenses={expenses}
-      budget={budget}
+      budget={WEDDING_BUDGET}
       databaseConnected={databaseConnected}
       loadError={loadError}
     />

@@ -35,7 +35,7 @@ The page is locked behind a password that is checked on the server. It needs one
 1. **Password:** In Vercel, open the project's **Settings > Environment Variables** and add `EXPENSES_PASSWORD` with a long, unique password (a passphrase of 4+ random words works well). Optionally add `EXPENSES_SESSION_SECRET` with any long random string; if you leave it out, the password itself is used to sign the login cookie.
 2. **Database (Supabase):**
    1. Create a project at supabase.com (free plan).
-   2. In the Supabase dashboard, open **SQL Editor**, paste the contents of `supabase/schema.sql`, and click **Run**. It creates the tables and locks them down. It's safe to run again.
+   2. In the Supabase dashboard, open **SQL Editor**, paste the contents of `supabase/schema.sql`, and click **Run**. It creates the tables and locks them down. It's safe to run again. If you set this up before, running it again adds the remarks column and removes the old budget table.
    3. In **Project Settings > API**, copy the **Project URL** and the **secret** key (`sb_secret_...`, or the `service_role` key on older projects).
    4. In Vercel, add these environment variables: `SUPABASE_URL` (the Project URL) and `SUPABASE_SECRET_KEY` (the secret key). Never use a `NEXT_PUBLIC_` prefix for the secret key.
    

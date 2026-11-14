@@ -6,7 +6,7 @@ import {
   type Expense,
   type ExpenseStatus,
 } from "../../lib/expense-types";
-import { logout, removeExpense, saveBudget, saveExpense } from "./actions";
+import { logout, removeExpense, saveExpense } from "./actions";
 
 type Props = {
   expenses: Expense[];
@@ -22,6 +22,8 @@ type FormState = {
   amount: string;
   paidBy: string;
   status: ExpenseStatus;
+  remarks: string;
+  balance: string;
 };
 
 const inr = new Intl.NumberFormat("en-IN", {
@@ -63,6 +65,8 @@ function emptyForm(): FormState {
     amount: "",
     paidBy: "",
     status: "paid",
+    remarks: "",
+    balance: "",
   };
 }
 
@@ -74,9 +78,11 @@ function csvCell(value: string | number): string {
 }
 
 function downloadCsv(rows: Expense[]) {
-  const header = ["Date", "Description", "Category", "Amount (INR)", "Paid by", "Status"];
+  const header = ["Date", "Description", "Category", "Amount (INR)", "Paid by", "Status", "Remarks"];
   const lines = rows.map((e) =>
-    [e.date, e.description, e.category, e.amount, e.paidBy, e.status].map(csvCell).join(","),
+    [e.date, e.description, e.category, e.amount, e.paidBy, e.status, e.remarks]
+      .map(csvCell)
+      .join(","),
   );
   const blob = new Blob([[header.map(csvCell).join(","), ...lines].join("\n")], {
     type: "text/csv;charset=utf-8",
@@ -100,8 +106,6 @@ export default function ExpenseTracker({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
-  const [budgetInput, setBudgetInput] = useState(budget ? String(budget) : "");
-  const [budgetMessage, setBudgetMessage] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -111,10 +115,6 @@ export default function ExpenseTracker({
   useEffect(() => {
     setForm((f) => (f.date ? f : { ...f, date: today() }));
   }, []);
-
-  useEffect(() => {
-    setBudgetInput(budget ? String(budget) : "");
-  }, [budget]);
 
   const totals = useMemo(() => {
     let paid = 0;
@@ -150,7 +150,10 @@ export default function ExpenseTracker({
     return expenses.filter((e) => {
       if (categoryFilter !== "all" && e.category !== categoryFilter) return false;
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
-      if (q && !`${e.description} ${e.paidBy} ${e.category}`.toLowerCase().includes(q)) {
+      if (
+        q &&
+        !`${e.description} ${e.paidBy} ${e.category} ${e.remarks}`.toLowerCase().includes(q)
+      ) {
         return false;
       }
       return true;
@@ -181,6 +184,8 @@ export default function ExpenseTracker({
       amount: String(e.amount),
       paidBy: e.paidBy,
       status: e.status,
+      remarks: e.remarks,
+      balance: "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -189,6 +194,11 @@ export default function ExpenseTracker({
     event.preventDefault();
     setFormError(null);
     const amount = Number(form.amount);
+    // The balance only applies to a new paid expense; an empty field means no balance.
+    const balance =
+      !editingId && form.status === "paid" && form.balance.trim() !== ""
+        ? Number(form.balance)
+        : null;
     startTransition(async () => {
       const result = await saveExpense({
         id: editingId ?? undefined,
@@ -198,6 +208,8 @@ export default function ExpenseTracker({
         amount,
         paidBy: form.paidBy,
         status: form.status,
+        remarks: form.remarks,
+        balance,
       });
       if (result.ok) resetForm();
       else setFormError(result.error);
@@ -222,16 +234,6 @@ export default function ExpenseTracker({
         status: e.status === "paid" ? "pending" : "paid",
       });
       if (!result.ok) setListError(result.error);
-    });
-  }
-
-  function submitBudget(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBudgetMessage(null);
-    const amount = budgetInput.trim() === "" ? 0 : Number(budgetInput);
-    startTransition(async () => {
-      const result = await saveBudget(amount);
-      setBudgetMessage(result.ok ? "Budget saved." : result.error);
     });
   }
 
@@ -267,9 +269,7 @@ export default function ExpenseTracker({
       <section aria-label="Summary" className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className={cardClass}>
           <p className="text-xs uppercase tracking-wider text-ink/60">Budget</p>
-          <p className="mt-1 font-display text-2xl text-ink">
-            {budget > 0 ? inr.format(budget) : "Not set"}
-          </p>
+          <p className="mt-1 font-display text-2xl text-ink">{inr.format(budget)}</p>
         </div>
         <div className={cardClass}>
           <p className="text-xs uppercase tracking-wider text-ink/60">Paid</p>
@@ -286,7 +286,7 @@ export default function ExpenseTracker({
           <p
             className={`mt-1 font-display text-2xl ${overBudget ? "text-red-700" : "text-ink"}`}
           >
-            {budget > 0 ? inr.format(Math.abs(remaining)) : "—"}
+            {inr.format(Math.abs(remaining))}
           </p>
         </div>
       </section>
@@ -307,27 +307,6 @@ export default function ExpenseTracker({
           </p>
         </div>
       ) : null}
-
-      <form onSubmit={submitBudget} className="mt-4 flex flex-wrap items-center gap-2">
-        <label htmlFor="budget" className="text-sm text-ink/70">
-          Total budget (₹)
-        </label>
-        <input
-          id="budget"
-          type="number"
-          inputMode="decimal"
-          min="0"
-          step="1"
-          value={budgetInput}
-          onChange={(e) => setBudgetInput(e.target.value)}
-          placeholder="e.g. 2500000"
-          className={`${inputClass} max-w-[12rem]`}
-        />
-        <button type="submit" disabled={isPending || !databaseConnected} className={ghostButton}>
-          Save budget
-        </button>
-        {budgetMessage ? <span className="text-sm text-ink/70">{budgetMessage}</span> : null}
-      </form>
 
       {/* Breakdown */}
       {totals.categories.length > 0 ? (
@@ -468,6 +447,39 @@ export default function ExpenseTracker({
             ))}
           </fieldset>
 
+          <div className={form.status === "paid" && !editingId ? "sm:col-span-3" : "sm:col-span-6"}>
+            <label htmlFor="remarks" className="mb-1 block text-xs text-ink/60">
+              Remarks (optional)
+            </label>
+            <input
+              id="remarks"
+              maxLength={280}
+              value={form.remarks}
+              onChange={(e) => setForm({ ...form, remarks: e.target.value })}
+              placeholder="e.g. Paid by cheque, advance for 200 guests"
+              className={inputClass}
+            />
+          </div>
+
+          {form.status === "paid" && !editingId ? (
+            <div className="sm:col-span-3">
+              <label htmlFor="balance" className="mb-1 block text-xs text-ink/60">
+                Balance still to pay (₹, optional)
+              </label>
+              <input
+                id="balance"
+                type="number"
+                inputMode="decimal"
+                min="0.01"
+                step="0.01"
+                value={form.balance}
+                onChange={(e) => setForm({ ...form, balance: e.target.value })}
+                placeholder="Adds a separate pending row"
+                className={inputClass}
+              />
+            </div>
+          ) : null}
+
           {formError ? (
             <p role="alert" className="text-sm text-maroon sm:col-span-6">
               {formError}
@@ -558,6 +570,9 @@ export default function ExpenseTracker({
                       {formatDate(e.date)} · {e.category}
                       {e.paidBy ? ` · ${e.paidBy}` : ""}
                     </p>
+                    {e.remarks ? (
+                      <p className="mt-0.5 break-words text-xs italic text-ink/70">{e.remarks}</p>
+                    ) : null}
                   </div>
                   <div className="flex items-center gap-3">
                     <button
