@@ -10,14 +10,14 @@ export const PRELUDE_EVENTS: PreludeEvent[] = [
   {
     id: "haldi",
     title: "Haldi",
-    date: "2026-11-15",
+    date: "2027-02-15",
     time: "",
     venue: "",
     details: "",
     dressCode: "",
     locationUrl: "",
     audience: "guests",
-    sortOrder: 1,
+    sortOrder: 2,
   },
   {
     id: "sangeet",
@@ -29,7 +29,7 @@ export const PRELUDE_EVENTS: PreludeEvent[] = [
     dressCode: "",
     locationUrl: "",
     audience: "guests",
-    sortOrder: 2,
+    sortOrder: 1,
   },
   {
     id: "pellikuturu",
