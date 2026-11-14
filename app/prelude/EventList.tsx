@@ -23,9 +23,10 @@ function dateParts(value: string | null) {
   if (!y || !m || !d) return null;
   const date = new Date(y, m - 1, d);
   return {
-    weekday: date.toLocaleDateString("en-IN", { weekday: "long" }),
-    day: String(d),
-    monthYear: date.toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
+    weekday: date.toLocaleDateString("en-IN", { weekday: "long" }).toUpperCase(),
+    day: String(d).padStart(2, "0"),
+    month: date.toLocaleDateString("en-IN", { month: "long" }).toUpperCase(),
+    year: String(y),
   };
 }
 
@@ -45,29 +46,35 @@ function HaldiHeader({ event }: { event: PreludeEvent }) {
       className="relative aspect-[896/1195] w-full overflow-hidden rounded-2xl bg-cover bg-center"
       style={{ backgroundImage: "url(/prelude/haldi-bg.jpg)", backgroundColor: "#fdf3d8" }}
     >
-      <div className="absolute inset-x-0 top-[26%] flex flex-col items-center px-6 text-center">
-        <h3 id="event-dialog-title" className="font-display text-6xl italic text-[#4f7d1c]">
-          Haldi
+      <div className="absolute inset-x-0 top-[22%] flex flex-col items-center px-6 text-center">
+        <h3 id="event-dialog-title" className="font-display text-5xl italic text-[#3f7a3a] sm:text-6xl">
+          Haldi Ceremony
         </h3>
+        <p className="mt-3 font-display text-4xl text-[#b5561c] sm:text-5xl">Sai &amp; Harshitha</p>
 
         {parts ? (
-          <div className="mt-4 flex items-center justify-center gap-3 text-[#7a1f2b]">
-            <p className="font-display text-xl">{parts.weekday}</p>
-            <p className="rounded-md border-2 border-[#4f7d1c] bg-white/80 px-3 py-0.5 font-display text-4xl text-[#4f7d1c]">
-              {parts.day}
-            </p>
-            <p className="font-display text-xl">{parts.monthYear}</p>
+          <div className="mt-6 flex w-full max-w-xs items-center justify-center gap-4 border-y border-dashed border-[#b5561c]/70 py-3 text-[#5a3a2a]">
+            <div className="text-right">
+              <p className="text-sm tracking-[0.2em]">{parts.month}</p>
+            </div>
+            <div className="px-2 text-center">
+              <p className="font-display text-5xl leading-none text-[#3a5a3a]">{parts.day}</p>
+              <p className="mt-1 text-sm tracking-[0.2em]">{parts.year}</p>
+            </div>
+            <div className="text-left">
+              <p className="text-sm tracking-[0.2em]">{parts.weekday}</p>
+            </div>
           </div>
         ) : null}
 
         {event.time ? (
-          <p className="mt-4 text-sm uppercase tracking-[0.2em] text-[#6b2a1a]">{event.time}</p>
+          <p className="mt-4 text-sm uppercase tracking-[0.15em] text-[#5a3a2a]">{event.time}</p>
         ) : null}
 
         {event.venue ? (
-          <div className="mt-4">
-            <p className="font-display text-2xl italic text-[#4f7d1c]">Venue</p>
-            <p className="mt-1 text-sm text-[#5a2a1a]">{event.venue}</p>
+          <div className="mt-5">
+            <p className="font-display text-2xl text-[#b5561c]">:: Venue ::</p>
+            <p className="mt-1 text-sm uppercase tracking-wide text-[#5a3a2a]">{event.venue}</p>
           </div>
         ) : null}
       </div>
