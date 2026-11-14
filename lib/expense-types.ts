@@ -78,8 +78,8 @@ export function validateExpense(input: unknown): Validated {
   }
 
   const amount = typeof raw.amount === "number" ? raw.amount : NaN;
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return { ok: false, error: "Enter an amount greater than 0." };
+  if (!Number.isFinite(amount) || amount < 0) {
+    return { ok: false, error: "Enter an amount of 0 or more." };
   }
   if (amount > MAX_AMOUNT) return { ok: false, error: "That amount is too large." };
 
@@ -113,6 +113,11 @@ export function validateExpense(input: unknown): Validated {
       return { ok: false, error: "A balance can only be added to a paid expense." };
     }
     balance = Math.round(b * 100) / 100;
+  }
+
+  // Zero paid is only valid when a balance is entered: then only the pending row is saved.
+  if (amount === 0 && balance === null) {
+    return { ok: false, error: "Enter the amount paid, or add a balance still to pay." };
   }
 
   return {

@@ -69,24 +69,36 @@ export async function saveExpense(input: ExpenseInput): Promise<ActionResult> {
   }
 
   const id = editing ? (input.id as string) : randomUUID();
-  const rows: Expense[] = [{ id, ...parsed.value }];
+  const rows: Expense[] = [];
 
-  // A paid expense with a balance also creates a pending row for the rest.
-  if (!editing && parsed.balance !== null) {
-    const base =
-      parsed.value.description.length > 100
-        ? parsed.value.description.slice(0, 100)
-        : parsed.value.description;
+  if (!editing && parsed.balance !== null && parsed.value.amount === 0) {
+    // Nothing paid yet: save only the pending row, not a ₹0 paid row.
     rows.push({
+      ...parsed.value,
       id: randomUUID(),
-      date: parsed.value.date,
-      description: `${base} (balance)`,
-      category: parsed.value.category,
-      amount: parsed.balance,
-      paidBy: "",
       status: "pending",
-      remarks: "",
+      amount: parsed.balance,
     });
+  } else {
+    rows.push({ id, ...parsed.value });
+
+    // A paid expense with a balance also creates a pending row for the rest.
+    if (!editing && parsed.balance !== null) {
+      const base =
+        parsed.value.description.length > 100
+          ? parsed.value.description.slice(0, 100)
+          : parsed.value.description;
+      rows.push({
+        id: randomUUID(),
+        date: parsed.value.date,
+        description: `${base} (balance)`,
+        category: parsed.value.category,
+        amount: parsed.balance,
+        paidBy: "",
+        status: "pending",
+        remarks: "",
+      });
+    }
   }
 
   try {
