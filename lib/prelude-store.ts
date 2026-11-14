@@ -11,6 +11,8 @@ type EventDb = {
   details: string;
   audience: string;
   sort_order: number;
+  dress_code: string | null;
+  location_url: string | null;
 };
 
 const toGuest = (r: GuestDb): GuestRow => ({
@@ -28,6 +30,8 @@ const toEvent = (r: EventDb): PreludeEvent => ({
   details: r.details,
   audience: r.audience === "everyone" ? "everyone" : "guests",
   sortOrder: r.sort_order,
+  dressCode: r.dress_code ?? "",
+  locationUrl: r.location_url ?? "",
 });
 
 // ---- guests
@@ -78,7 +82,7 @@ export async function deleteGuest(phone: string): Promise<void> {
 export async function listEvents(): Promise<PreludeEvent[]> {
   const rows =
     (await supabase<EventDb[]>(
-      "prelude_events?select=id,title,event_date,event_time,venue,details,audience,sort_order&order=sort_order.asc,title.asc",
+      "prelude_events?select=id,title,event_date,event_time,venue,details,audience,sort_order,dress_code,location_url&order=sort_order.asc,title.asc",
     )) ?? [];
   return rows.map(toEvent);
 }
@@ -96,6 +100,8 @@ export async function putEvent(event: PreludeEvent): Promise<void> {
       details: event.details,
       audience: event.audience,
       sort_order: event.sortOrder,
+      dress_code: event.dressCode,
+      location_url: event.locationUrl,
     },
   });
 }

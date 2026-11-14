@@ -12,6 +12,8 @@ export type PreludeEvent = {
   time: string;
   venue: string;
   details: string;
+  dressCode: string;
+  locationUrl: string; // https link, e.g. a Google Maps link
   audience: Audience;
   sortOrder: number;
 };
@@ -93,6 +95,15 @@ export function validateEvent(
   const details = typeof raw.details === "string" ? raw.details.trim() : "";
   if (details.length > 500) return { ok: false, error: "Details are too long (500 characters max)." };
 
+  const dressCode = typeof raw.dressCode === "string" ? raw.dressCode.trim() : "";
+  if (dressCode.length > 120) return { ok: false, error: "Dress code is too long." };
+
+  const locationUrl = typeof raw.locationUrl === "string" ? raw.locationUrl.trim() : "";
+  if (locationUrl.length > 300) return { ok: false, error: "Location link is too long." };
+  if (locationUrl !== "" && !/^https:\/\//i.test(locationUrl)) {
+    return { ok: false, error: "The location link must start with https://" };
+  }
+
   if (raw.audience !== "everyone" && raw.audience !== "guests") {
     return { ok: false, error: "Pick who can see this event." };
   }
@@ -103,6 +114,16 @@ export function validateEvent(
 
   return {
     ok: true,
-    value: { title, date, time, venue, details, audience: raw.audience, sortOrder },
+    value: {
+      title,
+      date,
+      time,
+      venue,
+      details,
+      dressCode,
+      locationUrl,
+      audience: raw.audience,
+      sortOrder,
+    },
   };
 }

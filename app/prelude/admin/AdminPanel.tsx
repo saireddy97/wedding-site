@@ -57,12 +57,25 @@ type EventForm = {
   time: string;
   venue: string;
   details: string;
+  dressCode: string;
+  locationUrl: string;
   audience: Audience;
   sortOrder: string;
 };
 
 function emptyEventForm(): EventForm {
-  return { id: "", title: "", date: "", time: "", venue: "", details: "", audience: "guests", sortOrder: "0" };
+  return {
+    id: "",
+    title: "",
+    date: "",
+    time: "",
+    venue: "",
+    details: "",
+    dressCode: "",
+    locationUrl: "",
+    audience: "guests",
+    sortOrder: "0",
+  };
 }
 
 function toForm(e: PreludeEvent): EventForm {
@@ -73,6 +86,8 @@ function toForm(e: PreludeEvent): EventForm {
     time: e.time,
     venue: e.venue,
     details: e.details,
+    dressCode: e.dressCode,
+    locationUrl: e.locationUrl,
     audience: e.audience,
     sortOrder: String(e.sortOrder),
   };
@@ -139,6 +154,8 @@ export default function AdminPanel({
         time: eventForm.time,
         venue: eventForm.venue,
         details: eventForm.details,
+        dressCode: eventForm.dressCode,
+        locationUrl: eventForm.locationUrl,
         audience: eventForm.audience,
         sortOrder: Number(eventForm.sortOrder) || 0,
       });
@@ -303,6 +320,15 @@ export default function AdminPanel({
           <div className="sm:col-span-6">
             <label className="mb-1 block text-xs text-ink/60">Details</label>
             <textarea rows={3} maxLength={500} value={eventForm.details} onChange={(e) => setEventForm({ ...eventForm, details: e.target.value })} className={inputClass} />
+          </div>
+
+          <div className="sm:col-span-3">
+            <label className="mb-1 block text-xs text-ink/60">Dress code</label>
+            <input maxLength={120} placeholder="e.g. Traditional, pastel colours" value={eventForm.dressCode} onChange={(e) => setEventForm({ ...eventForm, dressCode: e.target.value })} className={inputClass} />
+          </div>
+          <div className="sm:col-span-3">
+            <label className="mb-1 block text-xs text-ink/60">Location link (Google Maps)</label>
+            <input type="url" maxLength={300} placeholder="https://maps.google.com/..." value={eventForm.locationUrl} onChange={(e) => setEventForm({ ...eventForm, locationUrl: e.target.value })} className={inputClass} />
           </div>
 
           {eventMessage ? (

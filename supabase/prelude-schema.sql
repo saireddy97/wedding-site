@@ -33,3 +33,9 @@ insert into public.prelude_events (title, audience, sort_order)
 select v.title, 'everyone', v.sort_order
 from (values ('Pellikuturu', 1), ('Pellikoduku', 2), ('Marriage', 3)) as v(title, sort_order)
 where not exists (select 1 from public.prelude_events e where e.title = v.title);
+
+-- Dress code and location link, added after the first version.
+alter table public.prelude_events
+  add column if not exists dress_code text not null default '' check (char_length(dress_code) <= 120);
+alter table public.prelude_events
+  add column if not exists location_url text not null default '' check (char_length(location_url) <= 300);
