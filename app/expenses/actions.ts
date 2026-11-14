@@ -78,6 +78,7 @@ export async function saveExpense(input: ExpenseInput): Promise<ActionResult> {
       id: randomUUID(),
       status: "pending",
       amount: parsed.balance,
+      date: null,
     });
   } else {
     rows.push({ id, ...parsed.value });
@@ -90,7 +91,7 @@ export async function saveExpense(input: ExpenseInput): Promise<ActionResult> {
           : parsed.value.description;
       rows.push({
         id: randomUUID(),
-        date: parsed.value.date,
+        date: null, // pending: no date until it is paid
         description: `${base} (balance)`,
         category: parsed.value.category,
         amount: parsed.balance,

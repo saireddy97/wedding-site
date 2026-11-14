@@ -21,7 +21,8 @@ export type ExpenseStatus = "paid" | "pending";
 
 export type Expense = {
   id: string;
-  date: string; // YYYY-MM-DD
+  // YYYY-MM-DD. Required when paid (the date it was paid). Null while pending.
+  date: string | null;
   description: string;
   category: string;
   amount: number;
@@ -32,7 +33,7 @@ export type Expense = {
 
 export type ExpenseInput = {
   id?: string;
-  date: string;
+  date: string | null;
   description: string;
   category: string;
   amount: number;
@@ -83,9 +84,6 @@ export function validateExpense(input: unknown): Validated {
   }
   if (amount > MAX_AMOUNT) return { ok: false, error: "That amount is too large." };
 
-  const date = typeof raw.date === "string" ? raw.date : "";
-  if (!isRealDate(date)) return { ok: false, error: "Pick a valid date." };
-
   const category = typeof raw.category === "string" ? raw.category : "";
   if (!(CATEGORIES as readonly string[]).includes(category)) {
     return { ok: false, error: "Pick a category." };
@@ -119,6 +117,24 @@ export function validateExpense(input: unknown): Validated {
   if (amount === 0 && balance === null) {
     return { ok: false, error: "Enter the amount paid, or add a balance still to pay." };
   }
+
+  // Nothing paid yet (amount 0 with a balance): only the pending row is saved, so no date.
+  const nothingPaid = amount === 0 && balance !== null;
+
+  // Paid needs the date it was paid. Pending has no date yet, so it stays empty.
+  const rawDate = typeof raw.date === "string" ? raw.date : "";
+  let date: string | null;
+  if (status === "paid" && !nothingPaid) {
+    if (!isRealDate(rawDate)) return { ok: false, error: "Enter the date it was paid." };
+    date = rawDate;
+  } else if (rawDate === "") {
+    date = null;
+  } else if (isRealDate(rawDate)) {
+    date = rawDate;
+  } else {
+    return { ok: false, error: "Pick a valid date, or leave it empty." };
+  }
+
 
   return {
     ok: true,

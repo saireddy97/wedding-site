@@ -3,7 +3,7 @@ import type { Expense } from "./expense-types";
 
 type Row = {
   id: string;
-  date: string;
+  date: string | null;
   description: string;
   category: string;
   amount: number | string;
@@ -15,7 +15,7 @@ type Row = {
 function toExpense(row: Row): Expense {
   return {
     id: row.id,
-    date: row.date,
+    date: row.date ?? null,
     description: row.description,
     category: row.category,
     amount: Number(row.amount),

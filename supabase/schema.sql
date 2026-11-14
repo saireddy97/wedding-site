@@ -3,7 +3,7 @@
 
 create table if not exists public.expenses (
   id uuid primary key default gen_random_uuid(),
-  date date not null,
+  date date,
   description text not null check (char_length(description) between 1 and 120),
   category text not null,
   amount numeric(14, 2) not null check (amount > 0),
@@ -12,6 +12,12 @@ create table if not exists public.expenses (
   remarks text not null default '' check (char_length(remarks) <= 280),
   created_at timestamptz not null default now()
 );
+
+-- Pending expenses have no date yet. A paid expense must have one.
+alter table public.expenses alter column date drop not null;
+alter table public.expenses drop constraint if exists paid_needs_date;
+alter table public.expenses add constraint paid_needs_date
+  check (status = 'pending' or date is not null);
 
 -- For databases created before remarks existed.
 alter table public.expenses

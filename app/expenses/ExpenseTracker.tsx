@@ -47,7 +47,8 @@ function today(): string {
   return new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in the user's timezone
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string | null): string {
+  if (!value) return "No date yet";
   const [y, m, d] = value.split("-").map(Number);
   if (!y || !m || !d) return value;
   return new Date(y, m - 1, d).toLocaleDateString("en-IN", {
@@ -80,7 +81,7 @@ function csvCell(value: string | number): string {
 function downloadCsv(rows: Expense[]) {
   const header = ["Date", "Description", "Category", "Amount (INR)", "Paid by", "Status", "Remarks"];
   const lines = rows.map((e) =>
-    [e.date, e.description, e.category, e.amount, e.paidBy, e.status, e.remarks]
+    [e.date ?? "", e.description, e.category, e.amount, e.paidBy, e.status, e.remarks]
       .map(csvCell)
       .join(","),
   );
@@ -106,6 +107,10 @@ export default function ExpenseTracker({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+
+  // Marking a pending expense as paid asks for the date first.
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const [payDate, setPayDate] = useState("");
 
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -178,7 +183,7 @@ export default function ExpenseTracker({
     setEditingId(e.id);
     setFormError(null);
     setForm({
-      date: e.date,
+      date: e.date ?? "",
       description: e.description,
       category: e.category,
       amount: String(e.amount),
@@ -194,15 +199,12 @@ export default function ExpenseTracker({
     event.preventDefault();
     setFormError(null);
     const amount = Number(form.amount);
-    // The balance only applies to a new paid expense; an empty field means no balance.
-    const balance =
-      !editingId && form.balance.trim() !== ""
-        ? Number(form.balance)
-        : null;
+    // The balance only applies to a new expense; an empty field means no balance.
+    const balance = !editingId && form.balance.trim() !== "" ? Number(form.balance) : null;
     startTransition(async () => {
       const result = await saveExpense({
         id: editingId ?? undefined,
-        date: form.date,
+        date: form.date || null,
         description: form.description,
         category: form.category,
         amount,
@@ -226,26 +228,51 @@ export default function ExpenseTracker({
     });
   }
 
-  function toggleStatus(e: Expense) {
+  // Paid -> pending clears the date, since nothing has been paid yet.
+  function markPending(e: Expense) {
     setListError(null);
     startTransition(async () => {
-      const result = await saveExpense({
-        ...e,
-        status: e.status === "paid" ? "pending" : "paid",
-      });
+      const result = await saveExpense({ ...e, status: "pending", date: null });
       if (!result.ok) setListError(result.error);
     });
   }
 
+  // Pending -> paid needs the date it was paid, so it is saved only after you enter it.
+  function confirmPaid(e: Expense) {
+    if (!payDate) {
+      setListError("Enter the date it was paid.");
+      return;
+    }
+    setListError(null);
+    startTransition(async () => {
+      const result = await saveExpense({ ...e, status: "paid", date: payDate });
+      if (!result.ok) {
+        setListError(result.error);
+      } else {
+        setPayingId(null);
+        setPayDate("");
+      }
+    });
+  }
+
+  function togglePaying(e: Expense) {
+    setListError(null);
+    if (payingId === e.id) {
+      setPayingId(null);
+      setPayDate("");
+    } else {
+      setPayingId(e.id);
+      setPayDate(today());
+    }
+  }
+
   return (
     <main className="mx-auto max-w-5xl px-4 pb-20 pt-10 sm:px-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-gold">Private</p>
-          <h1 className="mt-2 font-display text-4xl font-medium text-maroon sm:text-5xl">
-            Wedding expenses
-          </h1>
-        </div>
+      <header>
+        <p className="text-xs uppercase tracking-[0.35em] text-gold">Private</p>
+        <h1 className="mt-2 font-display text-4xl font-medium text-maroon sm:text-5xl">
+          Wedding expenses
+        </h1>
       </header>
 
       {!databaseConnected ? (
@@ -378,7 +405,7 @@ export default function ExpenseTracker({
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="amount" className="mb-1 block text-xs text-ink/60">
-              Amount (₹)
+              Amount paid (₹)
             </label>
             <input
               id="amount"
@@ -387,6 +414,7 @@ export default function ExpenseTracker({
               inputMode="decimal"
               min="0"
               step="0.01"
+              placeholder="0 if nothing paid yet"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
               className={inputClass}
@@ -394,11 +422,11 @@ export default function ExpenseTracker({
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="date" className="mb-1 block text-xs text-ink/60">
-              Date
+              Date paid
             </label>
             <input
               id="date"
-              required
+              required={Number(form.amount) > 0 || Boolean(editingId)}
               type="date"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -452,7 +480,7 @@ export default function ExpenseTracker({
                 step="0.01"
                 value={form.balance}
                 onChange={(e) => setForm({ ...form, balance: e.target.value })}
-                placeholder="Adds a separate pending row"
+                placeholder="Adds a pending row with no date"
                 className={inputClass}
               />
             </div>
@@ -541,50 +569,85 @@ export default function ExpenseTracker({
           <>
             <ul className="mt-2 divide-y divide-gold/20">
               {filtered.map((e) => (
-                <li key={e.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
-                  <div className="min-w-0 flex-1 basis-48">
-                    <p className="break-words font-medium">{e.description}</p>
-                    <p className="text-xs text-ink/60">
-                      {formatDate(e.date)} · {e.category}
-                      {e.paidBy ? ` · ${e.paidBy}` : ""}
-                    </p>
-                    {e.remarks ? (
-                      <p className="mt-0.5 break-words text-xs italic text-ink/70">{e.remarks}</p>
-                    ) : null}
+                <li key={e.id} className="py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <div className="min-w-0 flex-1 basis-48">
+                      <p className="break-words font-medium">{e.description}</p>
+                      <p className="text-xs text-ink/60">
+                        {formatDate(e.date)} · {e.category}
+                        {e.paidBy ? ` · ${e.paidBy}` : ""}
+                      </p>
+                      {e.remarks ? (
+                        <p className="mt-0.5 break-words text-xs italic text-ink/70">{e.remarks}</p>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => (e.status === "paid" ? markPending(e) : togglePaying(e))}
+                        disabled={isPending}
+                        title={
+                          e.status === "paid"
+                            ? "Tap to mark as pending"
+                            : "Tap to mark as paid (asks for the date)"
+                        }
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          e.status === "paid"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {e.status === "paid" ? "Paid" : "Pending"}
+                      </button>
+                      <p className="min-w-[6.5rem] text-right font-medium tabular-nums">
+                        {inr.format(e.amount)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => startEdit(e)}
+                        className="text-sm text-maroon underline-offset-2 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => remove(e)}
+                        disabled={isPending}
+                        className="text-sm text-ink/60 underline-offset-2 hover:text-maroon hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleStatus(e)}
-                      disabled={isPending}
-                      title="Tap to switch between paid and pending"
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        e.status === "paid"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {e.status === "paid" ? "Paid" : "Pending"}
-                    </button>
-                    <p className="min-w-[6.5rem] text-right font-medium tabular-nums">
-                      {inr.format(e.amount)}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => startEdit(e)}
-                      className="text-sm text-maroon underline-offset-2 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => remove(e)}
-                      disabled={isPending}
-                      className="text-sm text-ink/60 underline-offset-2 hover:text-maroon hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
+
+                  {payingId === e.id ? (
+                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-gold/10 p-3 text-sm">
+                      <label htmlFor={`pay-${e.id}`}>Date paid</label>
+                      <input
+                        id={`pay-${e.id}`}
+                        type="date"
+                        required
+                        value={payDate}
+                        onChange={(ev) => setPayDate(ev.target.value)}
+                        className={`${inputClass} max-w-[11rem]`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => confirmPaid(e)}
+                        disabled={isPending || !payDate}
+                        className={primaryButton}
+                      >
+                        Mark as paid
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => togglePaying(e)}
+                        className={ghostButton}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
