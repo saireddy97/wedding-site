@@ -125,6 +125,7 @@ export function validateExpense(input: unknown): Validated {
   const rawDate = typeof raw.date === "string" ? raw.date : "";
   let date: string | null;
   if (status === "paid" && !nothingPaid) {
+    if (paidBy === "") return { ok: false, error: "Enter who paid." };
     if (!isRealDate(rawDate)) return { ok: false, error: "Enter the date it was paid." };
     date = rawDate;
   } else if (rawDate === "") {
@@ -144,7 +145,8 @@ export function validateExpense(input: unknown): Validated {
       category,
       // Keep to 2 decimal places.
       amount: Math.round(amount * 100) / 100,
-      paidBy,
+      // Pending has no payer yet, same as no date.
+      paidBy: status === "pending" ? "" : paidBy,
       status,
       remarks,
     },

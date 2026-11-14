@@ -111,6 +111,7 @@ export default function ExpenseTracker({
   // Marking a pending expense as paid asks for the date first.
   const [payingId, setPayingId] = useState<string | null>(null);
   const [payDate, setPayDate] = useState("");
+  const [payBy, setPayBy] = useState("");
 
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -232,25 +233,31 @@ export default function ExpenseTracker({
   function markPending(e: Expense) {
     setListError(null);
     startTransition(async () => {
-      const result = await saveExpense({ ...e, status: "pending", date: null });
+      const result = await saveExpense({ ...e, status: "pending", date: null, paidBy: "" });
       if (!result.ok) setListError(result.error);
     });
   }
 
-  // Pending -> paid needs the date it was paid, so it is saved only after you enter it.
+  // Pending -> paid needs who paid and the date, so it is saved only after you enter both.
   function confirmPaid(e: Expense) {
+    const who = payBy.trim();
+    if (!who) {
+      setListError("Enter who paid.");
+      return;
+    }
     if (!payDate) {
       setListError("Enter the date it was paid.");
       return;
     }
     setListError(null);
     startTransition(async () => {
-      const result = await saveExpense({ ...e, status: "paid", date: payDate });
+      const result = await saveExpense({ ...e, status: "paid", date: payDate, paidBy: who });
       if (!result.ok) {
         setListError(result.error);
       } else {
         setPayingId(null);
         setPayDate("");
+        setPayBy("");
       }
     });
   }
@@ -260,9 +267,11 @@ export default function ExpenseTracker({
     if (payingId === e.id) {
       setPayingId(null);
       setPayDate("");
+      setPayBy("");
     } else {
       setPayingId(e.id);
       setPayDate(today());
+      setPayBy("");
     }
   }
 
@@ -426,7 +435,7 @@ export default function ExpenseTracker({
             </label>
             <input
               id="date"
-              required={Number(form.amount) > 0 || Boolean(editingId)}
+              required={form.status === "paid" && Number(form.amount) > 0}
               type="date"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -440,10 +449,11 @@ export default function ExpenseTracker({
             <input
               id="paidBy"
               list="payers"
+              required={form.status === "paid" && Number(form.amount) > 0}
               maxLength={60}
               value={form.paidBy}
               onChange={(e) => setForm({ ...form, paidBy: e.target.value })}
-              placeholder="Optional"
+              placeholder="Who paid"
               className={inputClass}
             />
             <datalist id="payers">
@@ -631,10 +641,20 @@ export default function ExpenseTracker({
                         onChange={(ev) => setPayDate(ev.target.value)}
                         className={`${inputClass} max-w-[11rem]`}
                       />
+                      <label htmlFor={`payby-${e.id}`}>Who paid</label>
+                      <input
+                        id={`payby-${e.id}`}
+                        list="payers"
+                        maxLength={60}
+                        value={payBy}
+                        onChange={(ev) => setPayBy(ev.target.value)}
+                        placeholder="Required"
+                        className={`${inputClass} max-w-[11rem]`}
+                      />
                       <button
                         type="button"
                         onClick={() => confirmPaid(e)}
-                        disabled={isPending || !payDate}
+                        disabled={isPending || !payDate || !payBy.trim()}
                         className={primaryButton}
                       >
                         Mark as paid
