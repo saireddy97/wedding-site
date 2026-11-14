@@ -15,13 +15,12 @@ type Props = {
   loadError: boolean;
 };
 
-type FormState = {
+type AddForm = {
   date: string;
   description: string;
   category: string;
   amount: string;
   paidBy: string;
-  status: ExpenseStatus;
   remarks: string;
   balance: string;
 };
@@ -58,14 +57,13 @@ function formatDate(value: string | null): string {
   });
 }
 
-function emptyForm(): FormState {
+function emptyAddForm(): AddForm {
   return {
-    date: "",
+    date: today(),
     description: "",
     category: CATEGORIES[0],
     amount: "",
     paidBy: "",
-    status: "paid",
     remarks: "",
     balance: "",
   };
@@ -96,6 +94,139 @@ function downloadCsv(rows: Expense[]) {
   URL.revokeObjectURL(url);
 }
 
+// Edits one expense in place, in its row. Status is changed from the badge, not here.
+function InlineEditor({
+  expense,
+  onDone,
+  payerOptions,
+}: {
+  expense: Expense;
+  onDone: () => void;
+  payerOptions: string[];
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [description, setDescription] = useState(expense.description);
+  const [category, setCategory] = useState(expense.category);
+  const [amount, setAmount] = useState(String(expense.amount));
+  const [date, setDate] = useState(expense.date ?? "");
+  const [paidBy, setPaidBy] = useState(expense.paidBy);
+  const [remarks, setRemarks] = useState(expense.remarks);
+
+  // A paid expense needs who paid and the date. A pending one has neither yet.
+  const detailsRequired = expense.status === "paid" && Number(amount) > 0;
+
+  function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await saveExpense({
+        id: expense.id,
+        date: date || null,
+        description,
+        category,
+        amount: Number(amount),
+        paidBy,
+        status: expense.status,
+        remarks,
+      });
+      if (result.ok) onDone();
+      else setError(result.error);
+    });
+  }
+
+  const listId = `payers-edit-${expense.id}`;
+
+  return (
+    <form onSubmit={save} className="grid gap-3 rounded-xl bg-gold/10 p-3 sm:grid-cols-6">
+      <div className="sm:col-span-3">
+        <label className="mb-1 block text-xs text-ink/60">Description</label>
+        <input
+          required
+          maxLength={120}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+      <div className="sm:col-span-3">
+        <label className="mb-1 block text-xs text-ink/60">Category</label>
+        <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="sm:col-span-2">
+        <label className="mb-1 block text-xs text-ink/60">Amount (₹)</label>
+        <input
+          required
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="mb-1 block text-xs text-ink/60">Date paid</label>
+        <input
+          type="date"
+          required={detailsRequired}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="mb-1 block text-xs text-ink/60">Paid by</label>
+        <input
+          list={listId}
+          maxLength={60}
+          required={detailsRequired}
+          value={paidBy}
+          onChange={(e) => setPaidBy(e.target.value)}
+          placeholder={detailsRequired ? "Required" : "Optional"}
+          className={inputClass}
+        />
+        <datalist id={listId}>
+          {payerOptions.map((p) => (
+            <option key={p} value={p} />
+          ))}
+        </datalist>
+      </div>
+      <div className="sm:col-span-6">
+        <label className="mb-1 block text-xs text-ink/60">Remarks (optional)</label>
+        <input
+          maxLength={280}
+          value={remarks}
+          onChange={(e) => setRemarks(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+
+      {error ? (
+        <p role="alert" className="text-sm text-maroon sm:col-span-6">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="flex gap-2 sm:col-span-6">
+        <button type="submit" disabled={isPending} className={primaryButton}>
+          {isPending ? "Saving..." : "Save changes"}
+        </button>
+        <button type="button" onClick={onDone} disabled={isPending} className={ghostButton}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function ExpenseTracker({
   expenses,
   budget,
@@ -103,12 +234,14 @@ export default function ExpenseTracker({
   loadError,
 }: Props) {
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<AddForm>(emptyAddForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
 
-  // Marking a pending expense as paid asks for the date first.
+  // Which row is open for editing.
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Marking a pending expense as paid asks for who paid and the date first.
   const [payingId, setPayingId] = useState<string | null>(null);
   const [payDate, setPayDate] = useState("");
   const [payBy, setPayBy] = useState("");
@@ -174,47 +307,25 @@ export default function ExpenseTracker({
   const pendingPct =
     budget > 0 ? Math.min(100 - paidPct, (totals.pending / budget) * 100) : 0;
 
-  function resetForm() {
-    setForm({ ...emptyForm(), date: today() });
-    setEditingId(null);
-    setFormError(null);
-  }
-
-  function startEdit(e: Expense) {
-    setEditingId(e.id);
-    setFormError(null);
-    setForm({
-      date: e.date ?? "",
-      description: e.description,
-      category: e.category,
-      amount: String(e.amount),
-      paidBy: e.paidBy,
-      status: e.status,
-      remarks: e.remarks,
-      balance: "",
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  // New expenses are always saved as paid. A balance adds a pending row with no date.
+  const addDetailsRequired = Number(form.amount) > 0;
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
-    const amount = Number(form.amount);
-    // The balance only applies to a new expense; an empty field means no balance.
-    const balance = !editingId && form.balance.trim() !== "" ? Number(form.balance) : null;
+    const balance = form.balance.trim() !== "" ? Number(form.balance) : null;
     startTransition(async () => {
       const result = await saveExpense({
-        id: editingId ?? undefined,
         date: form.date || null,
         description: form.description,
         category: form.category,
-        amount,
+        amount: Number(form.amount),
         paidBy: form.paidBy,
-        status: form.status,
+        status: "paid",
         remarks: form.remarks,
         balance,
       });
-      if (result.ok) resetForm();
+      if (result.ok) setForm(emptyAddForm());
       else setFormError(result.error);
     });
   }
@@ -225,11 +336,10 @@ export default function ExpenseTracker({
     startTransition(async () => {
       const result = await removeExpense(e.id);
       if (!result.ok) setListError(result.error);
-      else if (editingId === e.id) resetForm();
     });
   }
 
-  // Paid -> pending clears the date, since nothing has been paid yet.
+  // Paid -> pending clears the date and who paid, since nothing has been paid yet.
   function markPending(e: Expense) {
     setListError(null);
     startTransition(async () => {
@@ -375,11 +485,9 @@ export default function ExpenseTracker({
         </section>
       ) : null}
 
-      {/* Add / edit */}
+      {/* Add */}
       <section aria-label="Add expense" className={`${cardClass} mt-8`}>
-        <h2 className="font-display text-2xl text-maroon">
-          {editingId ? "Edit expense" : "Add an expense"}
-        </h2>
+        <h2 className="font-display text-2xl text-maroon">Add an expense</h2>
         <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-6">
           <div className="sm:col-span-3">
             <label htmlFor="description" className="mb-1 block text-xs text-ink/60">
@@ -435,7 +543,7 @@ export default function ExpenseTracker({
             </label>
             <input
               id="date"
-              required={form.status === "paid" && Number(form.amount) > 0}
+              required={addDetailsRequired}
               type="date"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
@@ -449,8 +557,8 @@ export default function ExpenseTracker({
             <input
               id="paidBy"
               list="payers"
-              required={form.status === "paid" && Number(form.amount) > 0}
               maxLength={60}
+              required={addDetailsRequired}
               value={form.paidBy}
               onChange={(e) => setForm({ ...form, paidBy: e.target.value })}
               placeholder="Who paid"
@@ -463,7 +571,7 @@ export default function ExpenseTracker({
             </datalist>
           </div>
 
-          <div className={!editingId ? "sm:col-span-3" : "sm:col-span-6"}>
+          <div className="sm:col-span-3">
             <label htmlFor="remarks" className="mb-1 block text-xs text-ink/60">
               Remarks (optional)
             </label>
@@ -476,25 +584,22 @@ export default function ExpenseTracker({
               className={inputClass}
             />
           </div>
-
-          {!editingId ? (
-            <div className="sm:col-span-3">
-              <label htmlFor="balance" className="mb-1 block text-xs text-ink/60">
-                Balance still to pay (₹, optional)
-              </label>
-              <input
-                id="balance"
-                type="number"
-                inputMode="decimal"
-                min="0.01"
-                step="0.01"
-                value={form.balance}
-                onChange={(e) => setForm({ ...form, balance: e.target.value })}
-                placeholder="Adds a pending row with no date"
-                className={inputClass}
-              />
-            </div>
-          ) : null}
+          <div className="sm:col-span-3">
+            <label htmlFor="balance" className="mb-1 block text-xs text-ink/60">
+              Balance still to pay (₹, optional)
+            </label>
+            <input
+              id="balance"
+              type="number"
+              inputMode="decimal"
+              min="0.01"
+              step="0.01"
+              value={form.balance}
+              onChange={(e) => setForm({ ...form, balance: e.target.value })}
+              placeholder="Adds a pending row with no date"
+              className={inputClass}
+            />
+          </div>
 
           {formError ? (
             <p role="alert" className="text-sm text-maroon sm:col-span-6">
@@ -504,13 +609,8 @@ export default function ExpenseTracker({
 
           <div className="flex gap-2 sm:col-span-6">
             <button type="submit" disabled={isPending || !databaseConnected} className={primaryButton}>
-              {isPending ? "Saving..." : editingId ? "Update expense" : "Add expense"}
+              {isPending ? "Saving..." : "Add expense"}
             </button>
-            {editingId ? (
-              <button type="button" onClick={resetForm} className={ghostButton}>
-                Cancel
-              </button>
-            ) : null}
           </div>
         </form>
       </section>
@@ -580,94 +680,103 @@ export default function ExpenseTracker({
             <ul className="mt-2 divide-y divide-gold/20">
               {filtered.map((e) => (
                 <li key={e.id} className="py-3">
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                    <div className="min-w-0 flex-1 basis-48">
-                      <p className="break-words font-medium">{e.description}</p>
-                      <p className="text-xs text-ink/60">
-                        {formatDate(e.date)} · {e.category}
-                        {e.paidBy ? ` · ${e.paidBy}` : ""}
-                      </p>
-                      {e.remarks ? (
-                        <p className="mt-0.5 break-words text-xs italic text-ink/70">{e.remarks}</p>
-                      ) : null}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => (e.status === "paid" ? markPending(e) : togglePaying(e))}
-                        disabled={isPending}
-                        title={
-                          e.status === "paid"
-                            ? "Tap to mark as pending"
-                            : "Tap to mark as paid (asks for the date)"
-                        }
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${
-                          e.status === "paid"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {e.status === "paid" ? "Paid" : "Pending"}
-                      </button>
-                      <p className="min-w-[6.5rem] text-right font-medium tabular-nums">
-                        {inr.format(e.amount)}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => startEdit(e)}
-                        className="text-sm text-maroon underline-offset-2 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => remove(e)}
-                        disabled={isPending}
-                        className="text-sm text-ink/60 underline-offset-2 hover:text-maroon hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
+                  {editingId === e.id ? (
+                    <InlineEditor
+                      expense={e}
+                      payerOptions={payerOptions}
+                      onDone={() => setEditingId(null)}
+                    />
+                  ) : (
+                    <>
+                      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                        <div className="min-w-0 flex-1 basis-48">
+                          <p className="break-words font-medium">{e.description}</p>
+                          <p className="text-xs text-ink/60">
+                            {formatDate(e.date)} · {e.category}
+                            {e.paidBy ? ` · ${e.paidBy}` : ""}
+                          </p>
+                          {e.remarks ? (
+                            <p className="mt-0.5 break-words text-xs italic text-ink/70">{e.remarks}</p>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => (e.status === "paid" ? markPending(e) : togglePaying(e))}
+                            disabled={isPending}
+                            title={
+                              e.status === "paid"
+                                ? "Tap to mark as pending"
+                                : "Tap to mark as paid (asks for who paid and the date)"
+                            }
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                              e.status === "paid"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {e.status === "paid" ? "Paid" : "Pending"}
+                          </button>
+                          <p className="min-w-[6.5rem] text-right font-medium tabular-nums">
+                            {inr.format(e.amount)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayingId(null);
+                              setEditingId(e.id);
+                            }}
+                            className="text-sm text-maroon underline-offset-2 hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => remove(e)}
+                            disabled={isPending}
+                            className="text-sm text-ink/60 underline-offset-2 hover:text-maroon hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
 
-                  {payingId === e.id ? (
-                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-gold/10 p-3 text-sm">
-                      <label htmlFor={`pay-${e.id}`}>Date paid</label>
-                      <input
-                        id={`pay-${e.id}`}
-                        type="date"
-                        required
-                        value={payDate}
-                        onChange={(ev) => setPayDate(ev.target.value)}
-                        className={`${inputClass} max-w-[11rem]`}
-                      />
-                      <label htmlFor={`payby-${e.id}`}>Who paid</label>
-                      <input
-                        id={`payby-${e.id}`}
-                        list="payers"
-                        maxLength={60}
-                        value={payBy}
-                        onChange={(ev) => setPayBy(ev.target.value)}
-                        placeholder="Required"
-                        className={`${inputClass} max-w-[11rem]`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => confirmPaid(e)}
-                        disabled={isPending || !payDate || !payBy.trim()}
-                        className={primaryButton}
-                      >
-                        Mark as paid
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => togglePaying(e)}
-                        className={ghostButton}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : null}
+                      {payingId === e.id ? (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-gold/10 p-3 text-sm">
+                          <label htmlFor={`pay-${e.id}`}>Date paid</label>
+                          <input
+                            id={`pay-${e.id}`}
+                            type="date"
+                            required
+                            value={payDate}
+                            onChange={(ev) => setPayDate(ev.target.value)}
+                            className={`${inputClass} max-w-[11rem]`}
+                          />
+                          <label htmlFor={`payby-${e.id}`}>Who paid</label>
+                          <input
+                            id={`payby-${e.id}`}
+                            list="payers"
+                            maxLength={60}
+                            value={payBy}
+                            onChange={(ev) => setPayBy(ev.target.value)}
+                            placeholder="Required"
+                            className={`${inputClass} max-w-[11rem]`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => confirmPaid(e)}
+                            disabled={isPending || !payDate || !payBy.trim()}
+                            className={primaryButton}
+                          >
+                            Mark as paid
+                          </button>
+                          <button type="button" onClick={() => togglePaying(e)} className={ghostButton}>
+                            Cancel
+                          </button>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
