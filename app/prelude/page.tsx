@@ -75,8 +75,9 @@ export default async function PreludePage() {
       <header className="text-center">
         <p className="text-xs uppercase tracking-[0.35em] text-gold">Sai &amp; Harshitha</p>
         <h1 className="mt-3 font-display text-5xl font-medium text-maroon sm:text-6xl">
-          {guest?.name ? `Welcome, ${guest.name}` : "Pre-wedding celebrations"}
+          Events
         </h1>
+        {guest?.name ? <p className="mt-3 text-sm text-ink/70">Welcome, {guest.name}</p> : null}
       </header>
 
       {!configured ? (
@@ -98,12 +99,7 @@ export default async function PreludePage() {
       ) : null}
 
       <section aria-label="Events" className="mt-10">
-        <h2 className="font-display text-3xl text-maroon">
-          {guest ? "Your events" : "Main events"}
-        </h2>
-        <div className="mt-5">
-          <EventList events={guest ? visible : mainEvents} />
-        </div>
+        <EventList events={guest ? visible : mainEvents} />
       </section>
     </main>
   );
