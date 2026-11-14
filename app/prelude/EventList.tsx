@@ -42,10 +42,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function HaldiHeader({ event }: { event: PreludeEvent }) {
   const parts = dateParts(event.date);
   return (
-    <div
-      className="relative min-h-[calc(100dvh-2rem)] w-full overflow-hidden rounded-2xl bg-cover bg-center sm:aspect-[896/1195] sm:min-h-0"
-      style={{ backgroundImage: "url(/prelude/haldi-bg.jpg)", backgroundColor: "#fdf3d8" }}
-    >
+    <div className="flex min-h-[calc(100dvh-2rem)] items-center justify-center rounded-2xl bg-[#fdf3d8] sm:min-h-0">
+      <div
+        className="relative aspect-[896/1195] overflow-hidden bg-cover bg-center"
+        style={{
+          width: "min(100%, calc((100dvh - 2rem) * 0.7497))",
+          backgroundImage: "url(/prelude/haldi-bg.jpg)",
+        }}
+      >
       <div className="absolute inset-x-0 top-[11%] flex flex-col items-center px-6 text-center sm:top-[14%]">
         <h3 id="event-dialog-title" className="font-display text-4xl italic text-[#3f7a3a] sm:text-6xl">
           Haldi Ceremony
@@ -77,6 +81,7 @@ function HaldiHeader({ event }: { event: PreludeEvent }) {
             <p className="mt-1 text-sm uppercase tracking-wide text-[#5a3a2a]">{event.venue}</p>
           </div>
         ) : null}
+      </div>
       </div>
     </div>
   );
