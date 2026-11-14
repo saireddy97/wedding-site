@@ -1,46 +1,26 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { databaseConfigured, supabase } from "./supabase";
+import {
+  COOKIE_NAME,
+  createToken,
+  sessionCookieOptions,
+  verifyToken,
+} from "./session";
 
 // Password protection for /expenses.
 // - The password lives only in the EXPENSES_PASSWORD env var (never in the code).
-// - After a correct password we set a signed, httpOnly cookie that expires in 30 days.
+// - After a correct password we set a signed, httpOnly cookie. It expires after
+//   30 minutes without activity (middleware refreshes it on each visit).
 // - Every page load and every action re-checks that cookie on the server.
 
-export const COOKIE_NAME = "expenses_session";
-export const COOKIE_PATH = "/expenses";
-const MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+export { COOKIE_NAME };
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 
 export function isConfigured(): boolean {
   return Boolean(process.env.EXPENSES_PASSWORD);
-}
-
-function signingKey(): string {
-  return process.env.EXPENSES_SESSION_SECRET || process.env.EXPENSES_PASSWORD || "";
-}
-
-function sign(payload: string): string {
-  return createHmac("sha256", signingKey()).update(payload).digest("base64url");
-}
-
-export function createToken(now: number = Date.now()): string {
-  const payload = String(now + MAX_AGE_SECONDS * 1000);
-  return `${payload}.${sign(payload)}`;
-}
-
-export function verifyToken(token: string | undefined | null, now: number = Date.now()): boolean {
-  if (!token || !signingKey()) return false;
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return false;
-
-  const expected = Buffer.from(sign(payload));
-  const actual = Buffer.from(signature);
-  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return false;
-
-  return Number(payload) > now;
 }
 
 export function passwordMatches(input: string): boolean {
@@ -59,13 +39,7 @@ export async function isAuthed(): Promise<boolean> {
 
 export async function setSession(): Promise<void> {
   const jar = await cookies();
-  jar.set(COOKIE_NAME, createToken(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: COOKIE_PATH,
-    maxAge: MAX_AGE_SECONDS,
-  });
+  jar.set(COOKIE_NAME, createToken(), sessionCookieOptions());
 }
 
 // Brute-force protection: after 5 wrong passwords from one IP, lock that IP out for

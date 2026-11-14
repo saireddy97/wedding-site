@@ -47,7 +47,7 @@ How it is protected:
 
 - Until `EXPENSES_PASSWORD` is set, the page shows "This page isn't available yet" and nothing else.
 - Expense data is only read from the database after the password check passes, and every add, edit and delete re-checks the login on the server.
-- The login cookie is signed, `httpOnly`, `secure` and expires after 30 days. Changing the password (or the session secret) signs everyone out.
+- The login is signed, `httpOnly` and `secure`. It ends after 30 minutes without activity, and each visit or action renews it. Changing the password (or the session secret) signs everyone out.
 - After 5 wrong passwords from one IP address, that IP is locked out for 15 minutes.
 - The page is marked `noindex` and is not linked from anywhere.
 
