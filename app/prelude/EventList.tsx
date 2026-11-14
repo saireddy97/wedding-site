@@ -81,6 +81,11 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
                 onClick={(ev) => ev.stopPropagation()}
                 className="fade-up max-h-[90vh] w-full overflow-y-auto rounded-t-3xl bg-cream p-6 shadow-xl sm:max-w-lg sm:rounded-3xl sm:p-8"
               >
+                <div
+                  aria-hidden
+                  className="mb-6 h-40 w-full rounded-2xl bg-cover bg-center"
+                  style={{ backgroundImage: `url(/prelude/${open.id}.svg)`, backgroundColor: "#f3e7d3" }}
+                />
                 <div className="flex items-start justify-between gap-4">
                   <h3 id="event-dialog-title" className="font-display text-3xl text-maroon">
                     {open.title}
