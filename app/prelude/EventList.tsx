@@ -160,7 +160,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
       {open && typeof document !== "undefined"
         ? createPortal(
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 sm:p-6"
+              className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center sm:p-6"
               onClick={() => setOpenId(null)}
             >
               <div
@@ -170,12 +170,12 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
                 onClick={(ev) => ev.stopPropagation()}
                 style={
                   isHaldi
-                    ? { width: "min(calc(100vw - 2rem), calc((100dvh - 2rem) * 0.7497))" }
+                    ? { width: "min(100vw, calc((100dvh - 2rem) * 0.7497))" }
                     : undefined
                 }
                 className={
                   isHaldi
-                    ? "fade-up relative overflow-hidden rounded-2xl shadow-xl"
+                    ? "fade-up relative overflow-hidden rounded-t-2xl shadow-xl sm:rounded-2xl"
                     : "fade-up relative h-[100dvh] w-full overflow-y-auto bg-cream p-4 shadow-xl sm:h-auto sm:max-h-[90vh] sm:max-w-lg sm:rounded-3xl sm:p-8"
                 }
               >
