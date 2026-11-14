@@ -43,22 +43,22 @@ function HaldiHeader({ event }: { event: PreludeEvent }) {
   const parts = dateParts(event.date);
   return (
     <div
-      className="relative aspect-[896/1195] w-full overflow-hidden rounded-2xl bg-cover bg-center"
+      className="relative min-h-[calc(100dvh-2rem)] w-full overflow-hidden rounded-2xl bg-cover bg-center sm:aspect-[896/1195] sm:min-h-0"
       style={{ backgroundImage: "url(/prelude/haldi-bg.jpg)", backgroundColor: "#fdf3d8" }}
     >
-      <div className="absolute inset-x-0 top-[22%] flex flex-col items-center px-6 text-center">
-        <h3 id="event-dialog-title" className="font-display text-5xl italic text-[#3f7a3a] sm:text-6xl">
+      <div className="absolute inset-x-0 top-[11%] flex flex-col items-center px-6 text-center sm:top-[14%]">
+        <h3 id="event-dialog-title" className="font-display text-4xl italic text-[#3f7a3a] sm:text-6xl">
           Haldi Ceremony
         </h3>
-        <p className="mt-3 font-display text-4xl text-[#b5561c] sm:text-5xl">Sai &amp; Harshitha</p>
+        <p className="mt-2 font-display text-3xl text-[#b5561c] sm:mt-3 sm:text-5xl">Sai &amp; Harshitha</p>
 
         {parts ? (
-          <div className="mt-6 flex w-full max-w-xs items-center justify-center gap-4 border-y border-dashed border-[#b5561c]/70 py-3 text-[#5a3a2a]">
+          <div className="mt-4 flex w-full max-w-xs items-center justify-center gap-4 border-y border-dashed border-[#b5561c]/70 py-2 text-[#5a3a2a] sm:mt-6 sm:py-3">
             <div className="text-right">
               <p className="text-sm tracking-[0.2em]">{parts.month}</p>
             </div>
             <div className="px-2 text-center">
-              <p className="font-display text-5xl leading-none text-[#3a5a3a]">{parts.day}</p>
+              <p className="font-display text-4xl leading-none text-[#3a5a3a] sm:text-5xl">{parts.day}</p>
               <p className="mt-1 text-sm tracking-[0.2em]">{parts.year}</p>
             </div>
             <div className="text-left">
