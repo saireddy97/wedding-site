@@ -39,6 +39,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export const INVITE_IMAGES: Record<string, string> = {
   haldi: "/prelude/haldi-invite.png",
   sangeet: "/prelude/sangeet-invite.png",
+  pellikoduku: "/prelude/pellikoduku-invite.png",
+  pellikuturu: "/prelude/pellikuturu-invite.png",
+  marriage: "/prelude/marriage-invite.png",
 };
 
 export function InviteImage({ src, title }: { src: string; title: string }) {

@@ -41,7 +41,7 @@ export const PRELUDE_EVENTS: PreludeEvent[] = [
     dressCode: "",
     locationUrl: "",
     audience: "everyone",
-    sortOrder: 3,
+    sortOrder: 4,
   },
   {
     id: "pellikoduku",
@@ -53,7 +53,7 @@ export const PRELUDE_EVENTS: PreludeEvent[] = [
     dressCode: "",
     locationUrl: "",
     audience: "everyone",
-    sortOrder: 4,
+    sortOrder: 3,
   },
   {
     id: "marriage",
