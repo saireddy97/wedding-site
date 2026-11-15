@@ -43,7 +43,7 @@ export type Invite = { src: string; width: number; height: number };
 export const INVITE_IMAGES: Record<string, Invite> = {
   haldi: { src: "/prelude/haldi-invite.png", width: 896, height: 1195 },
   sangeet: { src: "/prelude/sangeet-invite.png", width: 1497, height: 2048 },
-  pellikoduku: { src: "/prelude/pellikoduku-invite.png", width: 1348, height: 1972 },
+  pellikoduku: { src: "/prelude/pellikoduku-invite.png", width: 1348, height: 1898 },
   pellikuturu: { src: "/prelude/pellikuturu-invite.png", width: 1348, height: 1887 },
   marriage: { src: "/prelude/marriage-invite.png", width: 1348, height: 1888 },
 };
