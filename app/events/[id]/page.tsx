@@ -55,7 +55,7 @@ export default async function EventPage({ params }: Props) {
 
       <div className="mt-4">
         {INVITE_IMAGES[event.id] ? (
-          <InviteImage src={INVITE_IMAGES[event.id]} title={event.title} />
+          <InviteImage invite={INVITE_IMAGES[event.id]} title={event.title} />
         ) : (
           <>
             <EventBanner event={event} />

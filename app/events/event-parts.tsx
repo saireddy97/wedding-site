@@ -36,20 +36,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 // Events whose invitation image already holds all of its details. Nothing is laid over these.
-export const INVITE_IMAGES: Record<string, string> = {
-  haldi: "/prelude/haldi-invite.png",
-  sangeet: "/prelude/sangeet-invite.png",
-  pellikoduku: "/prelude/pellikoduku-invite.png",
-  pellikuturu: "/prelude/pellikuturu-invite.png",
-  marriage: "/prelude/marriage-invite.png",
+// The width and height are the image's real pixel size. They let the browser reserve the space
+// before the image loads, so the images don't jump around as each one arrives.
+export type Invite = { src: string; width: number; height: number };
+
+export const INVITE_IMAGES: Record<string, Invite> = {
+  haldi: { src: "/prelude/haldi-invite.png", width: 896, height: 1195 },
+  sangeet: { src: "/prelude/sangeet-invite.png", width: 1497, height: 2048 },
+  pellikoduku: { src: "/prelude/pellikoduku-invite.png", width: 1348, height: 2048 },
+  pellikuturu: { src: "/prelude/pellikuturu-invite.png", width: 1348, height: 2048 },
+  marriage: { src: "/prelude/marriage-invite.png", width: 1348, height: 1958 },
 };
 
-export function InviteImage({ src, title }: { src: string; title: string }) {
+export function InviteImage({ invite, title }: { invite: Invite; title: string }) {
   return (
     <div className="overflow-hidden rounded-2xl">
       <h1 className="sr-only">{title}</h1>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={`${title} invitation`} className="block h-auto w-full" />
+      <img
+        src={invite.src}
+        width={invite.width}
+        height={invite.height}
+        alt={`${title} invitation`}
+        className="block h-auto w-full"
+      />
     </div>
   );
 }

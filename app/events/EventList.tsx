@@ -20,7 +20,13 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
             <li key={e.id} className="fade-up" style={delay}>
               <Link href={`/events/${e.id}`} className="card-lift block overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={invite} alt={`${e.title} invitation`} className="block h-auto w-full" />
+                <img
+                  src={invite.src}
+                  width={invite.width}
+                  height={invite.height}
+                  alt={`${e.title} invitation`}
+                  className="block h-auto w-full"
+                />
               </Link>
             </li>
           );
