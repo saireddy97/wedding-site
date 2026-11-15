@@ -47,9 +47,10 @@ export default async function PreludePage() {
         </h1>
         <div aria-hidden className="draw-line mx-auto mt-6 h-px w-24 bg-gold/70" />
         {guest?.name ? (
-          <p className="fade-up mt-4 text-sm text-ink/70" style={{ animationDelay: "0.4s" }}>
-            Welcome, {guest.name}
-          </p>
+          <div className="fade-up mt-5" style={{ animationDelay: "0.4s" }}>
+            <p className="font-display text-3xl italic text-maroon">Dear {guest.name},</p>
+            <p className="mt-2 text-base text-ink/80">Please join us to celebrate</p>
+          </div>
         ) : null}
       </header>
 

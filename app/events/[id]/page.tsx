@@ -27,23 +27,28 @@ export default async function EventPage({ params }: Props) {
   const event = PRELUDE_EVENTS.find((e) => e.id === id);
   if (!event) notFound();
 
-  // Guest-only events need a signed-in guest. Anyone else goes back to the Events page.
-  if (event.audience === "guests") {
-    const configured = preludeConfigured() && databaseConfigured();
-    const phone = configured ? await currentGuestPhone() : null;
-    let guest: GuestRow | null = null;
-    if (phone) {
-      try {
-        guest = await findGuest(phone);
-      } catch {
-        guest = null;
-      }
+  const configured = preludeConfigured() && databaseConfigured();
+  const phone = configured ? await currentGuestPhone() : null;
+  let guest: GuestRow | null = null;
+  if (phone) {
+    try {
+      guest = await findGuest(phone);
+    } catch {
+      guest = null;
     }
-    if (!guest) redirect("/events");
   }
 
+  // Guest-only events need a signed-in guest. Anyone else goes back to the Events page.
+  if (event.audience === "guests" && !guest) redirect("/events");
+
+  // Previous and next events, limited to the ones this visitor can see.
+  const visible = guest ? PRELUDE_EVENTS : PRELUDE_EVENTS.filter((e) => e.audience === "everyone");
+  const index = visible.findIndex((e) => e.id === event.id);
+  const prev = index > 0 ? visible[index - 1] : null;
+  const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
+
   return (
-    <main className="mx-auto max-w-md px-4 pb-16 pt-6 sm:max-w-lg sm:px-6">
+    <main className="fade-up mx-auto max-w-md px-4 pb-16 pt-6 sm:max-w-lg sm:px-6">
       <Link href="/events" className="text-sm text-maroon underline-offset-2 hover:underline">
         ← All events
       </Link>
@@ -61,6 +66,26 @@ export default async function EventPage({ params }: Props) {
           <EventExtras event={event} />
         </div>
       </div>
+
+      <nav
+        aria-label="Other events"
+        className="mt-10 flex items-center justify-between gap-4 border-t border-gold/30 pt-6 text-sm"
+      >
+        {prev ? (
+          <Link href={`/events/${prev.id}`} className="text-maroon underline-offset-2 hover:underline">
+            ← {prev.title}
+          </Link>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <Link href={`/events/${next.id}`} className="ml-auto text-maroon underline-offset-2 hover:underline">
+            {next.title} →
+          </Link>
+        ) : (
+          <span />
+        )}
+      </nav>
     </main>
   );
 }
