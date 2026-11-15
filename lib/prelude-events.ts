@@ -6,7 +6,7 @@ import type { PreludeEvent } from "./prelude-types";
 //   audience "guests":   shown only after a guest signs in with a number on the list.
 //   date: YYYY-MM-DD, or null to show "Date to be announced".
 //   dressCode / locationUrl: optional. locationUrl must start with https://
-export const PRELUDE_EVENTS: PreludeEvent[] = [
+const EVENTS: PreludeEvent[] = [
   {
     id: "haldi",
     title: "Haldi",
@@ -68,3 +68,6 @@ export const PRELUDE_EVENTS: PreludeEvent[] = [
     sortOrder: 5,
   },
 ];
+
+// Shown in sortOrder, so the list above can be in any order.
+export const PRELUDE_EVENTS: PreludeEvent[] = [...EVENTS].sort((a, b) => a.sortOrder - b.sortOrder);
