@@ -17,7 +17,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
 
         if (invite) {
           return (
-            <li key={e.id} className="fade-up" style={delay}>
+            <li key={e.id} className="rise-in" style={delay}>
               <Link href={`/events/${e.id}`} className="card-lift block overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -33,7 +33,7 @@ export function EventList({ events }: { events: PreludeEvent[] }) {
         }
 
         return (
-          <li key={e.id} className="fade-up" style={delay}>
+          <li key={e.id} className="rise-in" style={delay}>
             <Link
               href={`/events/${e.id}`}
               className="card-lift block rounded-2xl border border-gold/30 bg-white/60 p-5"

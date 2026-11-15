@@ -11,7 +11,10 @@ import { EventBanner, EventExtras, INVITE_IMAGES, InviteImage } from "../event-p
 // Guest status is checked on every request, so never cache this page.
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -22,8 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function EventPage({ params }: Props) {
+export default async function EventPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { from } = await searchParams;
   const event = PRELUDE_EVENTS.find((e) => e.id === id);
   if (!event) notFound();
 
@@ -47,13 +51,16 @@ export default async function EventPage({ params }: Props) {
   const prev = index > 0 ? visible[index - 1] : null;
   const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
 
+  // Going back slides in from the left. Going forward (or arriving from the list) slides in from the right.
+  const slide = from === "prev" ? "page-in-left" : "page-in-right";
+
   return (
-    <main className="fade-up mx-auto max-w-md px-4 pb-16 pt-6 sm:max-w-lg sm:px-6">
+    <main className={`${slide} mx-auto max-w-md px-4 pb-16 pt-6 sm:max-w-lg sm:px-6`}>
       <Link href="/events" className="text-sm text-maroon underline-offset-2 hover:underline">
         ← All events
       </Link>
 
-      <div className="mt-4">
+      <div className="rise-in mt-4" style={{ animationDelay: "0.15s" }}>
         {INVITE_IMAGES[event.id] ? (
           <InviteImage invite={INVITE_IMAGES[event.id]} title={event.title} />
         ) : (
@@ -62,9 +69,10 @@ export default async function EventPage({ params }: Props) {
             <h1 className="font-display text-4xl text-maroon sm:text-5xl">{event.title}</h1>
           </>
         )}
-        <div className="mt-6">
-          <EventExtras event={event} />
-        </div>
+      </div>
+
+      <div className="rise-in mt-6" style={{ animationDelay: "0.35s" }}>
+        <EventExtras event={event} />
       </div>
 
       <nav
@@ -72,14 +80,20 @@ export default async function EventPage({ params }: Props) {
         className="mt-10 flex items-center justify-between gap-4 border-t border-gold/30 pt-6 text-sm"
       >
         {prev ? (
-          <Link href={`/events/${prev.id}`} className="text-maroon underline-offset-2 hover:underline">
+          <Link
+            href={`/events/${prev.id}?from=prev`}
+            className="text-maroon underline-offset-2 hover:underline"
+          >
             ← {prev.title}
           </Link>
         ) : (
           <span />
         )}
         {next ? (
-          <Link href={`/events/${next.id}`} className="ml-auto text-maroon underline-offset-2 hover:underline">
+          <Link
+            href={`/events/${next.id}?from=next`}
+            className="ml-auto text-maroon underline-offset-2 hover:underline"
+          >
             {next.title} →
           </Link>
         ) : (
