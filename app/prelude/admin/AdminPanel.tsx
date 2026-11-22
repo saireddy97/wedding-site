@@ -43,7 +43,7 @@ export default function AdminPanel({
 }: {
   guests: GuestRow[];
   databaseConnected: boolean;
-  loadError: boolean;
+  loadError: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
   const [pasted, setPasted] = useState("");
@@ -95,7 +95,7 @@ export default function AdminPanel({
       ) : null}
       {loadError ? (
         <p role="alert" className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
-          Couldn&rsquo;t load the guest list. Refresh to try again.
+          Couldn&rsquo;t load the guest list: {loadError}
         </p>
       ) : null}
 

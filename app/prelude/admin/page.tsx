@@ -25,13 +25,15 @@ export default async function PreludeAdminPage() {
 
   const databaseConnected = databaseConfigured();
   let guests: GuestRow[] = [];
-  let loadError = false;
+  // Shown to the admin only, so the real reason (for example a missing table) is visible.
+  let loadError: string | null = null;
 
   if (databaseConnected) {
     try {
       guests = await listGuests();
-    } catch {
-      loadError = true;
+    } catch (err) {
+      console.error("Guest list failed to load:", err);
+      loadError = err instanceof Error ? err.message : "Unknown error";
     }
   }
 
