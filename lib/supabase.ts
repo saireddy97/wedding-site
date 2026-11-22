@@ -38,12 +38,20 @@ export async function supabase<T = unknown>(
   if (key.startsWith("eyJ")) headers.Authorization = `Bearer ${key}`;
   if (prefer) headers.Prefer = prefer;
 
-  const res = await fetch(`${url}/rest/v1/${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${url}/rest/v1/${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+    });
+  } catch (err) {
+    // Name the address and the network reason (for example ENOTFOUND), so a wrong URL is easy to spot.
+    const host = url.replace(/^https?:\/\//, "").split("/")[0];
+    const code = (err as { cause?: { code?: string } })?.cause?.code;
+    throw new Error(`Could not reach Supabase at ${host}${code ? ` (${code})` : ""}`);
+  }
 
   if (!res.ok) {
     let detail = "";
