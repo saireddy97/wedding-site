@@ -33,7 +33,9 @@ export async function loginGuest(_prev: GuestState, formData: FormData): Promise
   let guest;
   try {
     guest = await findGuest(phone);
-  } catch {
+  } catch (err) {
+    // The visitor sees a short message. The real cause goes to the server logs.
+    console.error("Guest lookup failed:", err);
     return { error: "Something went wrong. Please try again." };
   }
 
