@@ -10,7 +10,7 @@ import { makeToken, readToken } from "./signed-token";
 const GUEST_COOKIE = "prelude_guest";
 const ADMIN_COOKIE = "prelude_admin";
 const ADMIN_COOKIE_PATH = "/prelude";
-const GUEST_COOKIE_PATH = "/events";
+const GUEST_COOKIE_PATH = "/prelude";
 const GUEST_MAX_AGE = 60 * 60 * 24 * 90;
 const ADMIN_MAX_AGE = 60 * 60 * 12;
 

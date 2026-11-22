@@ -40,7 +40,7 @@ export async function loginGuest(_prev: GuestState, formData: FormData): Promise
   if (!guest) {
     await recordFailure(key);
     return {
-      note: "That number isn't on the guest list. Here are the main events.",
+      note: "That number isn't on the guest list.",
     };
   }
 
@@ -49,9 +49,9 @@ export async function loginGuest(_prev: GuestState, formData: FormData): Promise
     try {
       await tagGuestName(phone, name);
     } catch {
-      // Not critical: the guest can still see their events.
+      // Not critical: the guest can still sign in with the same number.
     }
   }
   await setGuestSession(phone);
-  redirect("/events");
+  redirect("/prelude");
 }
