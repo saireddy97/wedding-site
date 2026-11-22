@@ -1,15 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { databaseConfigured } from "../../../lib/supabase";
-import { findGuest } from "../../../lib/prelude-store";
-import type { GuestRow } from "../../../lib/prelude-types";
+import { notFound } from "next/navigation";
 import { PRELUDE_EVENTS } from "../../../lib/prelude-events";
-import { currentGuestPhone, preludeConfigured } from "../../../lib/prelude-auth";
 import { EventBanner, EventExtras, INVITE_IMAGES, InviteImage } from "../event-parts";
-
-// Guest status is checked on every request, so never cache this page.
-export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -28,28 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function EventPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { from } = await searchParams;
-  const event = PRELUDE_EVENTS.find((e) => e.id === id);
-  if (!event) notFound();
+  const index = PRELUDE_EVENTS.findIndex((e) => e.id === id);
+  if (index === -1) notFound();
+  const event = PRELUDE_EVENTS[index];
 
-  const configured = preludeConfigured() && databaseConfigured();
-  const phone = configured ? await currentGuestPhone() : null;
-  let guest: GuestRow | null = null;
-  if (phone) {
-    try {
-      guest = await findGuest(phone);
-    } catch {
-      guest = null;
-    }
-  }
-
-  // Guest-only events need a signed-in guest. Anyone else goes back to the Events page.
-  if (event.audience === "guests" && !guest) redirect("/events");
-
-  // Previous and next events, limited to the ones this visitor can see.
-  const visible = guest ? PRELUDE_EVENTS : PRELUDE_EVENTS.filter((e) => e.audience === "everyone");
-  const index = visible.findIndex((e) => e.id === event.id);
-  const prev = index > 0 ? visible[index - 1] : null;
-  const next = index >= 0 && index < visible.length - 1 ? visible[index + 1] : null;
+  const prev = index > 0 ? PRELUDE_EVENTS[index - 1] : null;
+  const next = index < PRELUDE_EVENTS.length - 1 ? PRELUDE_EVENTS[index + 1] : null;
 
   // Going back slides in from the left. Going forward (or arriving from the list) slides in from the right.
   const slide = from === "prev" ? "page-in-left" : "page-in-right";
